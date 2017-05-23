@@ -27,7 +27,7 @@ primersearch(input, forward, reverse, mismatch = 5, ...)
 \item{sequence_col}{(\code{character} of length 1) The name of the column in \code{obs_data} that has the input sequences.}
 
 \item{result_cols}{(\code{character}) The names of columns to include in the output.
-By defualt, all output columns are included.}
+By default, all output columns are included.}
 }
 \value{
 An object of type \code{\link{taxmap}}
@@ -66,6 +66,7 @@ ftp://emboss.open-bio.org/pub/EMBOSS/windows/mEMBOSS-6.5.0.0-setup.exe
 
 NOTE: This has not been tested by us yet.
 }
+
 \examples{
 \dontrun{
 result <- primersearch(rdp_ex_data, 
@@ -84,4 +85,3 @@ heat_tree(result,
 }
 
 }
-

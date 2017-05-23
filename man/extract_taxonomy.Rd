@@ -2,8 +2,8 @@
 % Please edit documentation in R/extract_taxonomy.R
 \name{extract_taxonomy}
 \alias{extract_taxonomy}
-\alias{extract_taxonomy.DNAbin}
 \alias{extract_taxonomy.default}
+\alias{extract_taxonomy.DNAbin}
 \alias{extract_taxonomy.list}
 \title{Extract taxonomy information from sequence headers}
 \usage{
@@ -15,7 +15,8 @@ extract_taxonomy(input, ...)
   class_rev = FALSE, database = c("none", "ncbi", "itis", "eol", "col",
   "tropicos", "nbn"), allow_na = TRUE, vigilance = c("warning", "error",
   "message", "none"), return_match = FALSE, return_input = FALSE,
-  redundant_names = FALSE, verbosity = c("low", "none", "high"), ...)
+  redundant_names = FALSE, batch_size = 100, verbosity = c("low", "none",
+  "high"), ...)
 
 \method{extract_taxonomy}{DNAbin}(input, ...)
 
@@ -38,7 +39,7 @@ Each term must be one of those decribed below:
   \item{\code{name}}{The name of a taxon. Not necessarily unique, but are interpretable
         by a particular \code{database}. Requires an internet connection.}
   \item{\code{taxon_info}}{Arbitrary taxon info you want included in the output. Can be used more than once.}
-  \item{\code{class}}{A list of taxa information that consitutes the full taxonomic classification
+  \item{\code{class}}{A list of taxa information that constitutes the full taxonomic classification
         from broad to specific (see \code{class_rev}) for a particular \code{database}. Individual taxa
         are separated by the \code{class_sep} argument and the information is parsed by the
         \code{class_regex} and \code{class_key} arguments.}
@@ -111,6 +112,9 @@ If \code{TRUE}, include the part of the input matched by \code{regex} in the out
 If \code{TRUE}, remove any occurrence of the a supertaxon's name at the start of the taxon name.
 This is useful for removing the redundant genus information in species binomials.}
 
+\item{batch_size}{(\code{numeric} of length 1) The number of IDs to look up at once. This only effects querys using "obs_id".
+If there is an error looking up an ID, reducing this to 1 can prevent it from ruining the whole batch, but it will take longer.}
+
 \item{verbosity}{(\code{character} of length 1) Controls the printing of progress updates.
 The following values are possible: 
  \describe{
@@ -134,17 +138,21 @@ Taxa are translated into unique codes if they are not already encoded this way.
 # Extract embedded classifications from UNITE FASTA file offline
 file_path <- system.file("extdata", "unite_general_release.fasta", package = "metacoder")
 sequences <- ape::read.FASTA(file_path)
-unite_ex_data_3 <- extract_taxonomy(sequences,
-                                    regex = "^(.*)\\\\|(.*)\\\\|(.*)\\\\|.*\\\\|(.*)$",
-                                    key = c(name = "obs_info", seq_id = "obs_info",
-                                            other_id = "obs_info", "class_name"),
-                                    database = "none")
+x <- extract_taxonomy(sequences,
+                      regex = "^(.*)\\\\|(.*)\\\\|(.*)\\\\|.*\\\\|(.*)$",
+                      key = c(seq_name = "obs_info", seq_id = "obs_info",
+                              other_id = "obs_info", "class"),
+                      class_regex = "^(.*)__(.*)$",
+                      class_key = c(unite_rank = "taxon_info", "name"),
+                      class_sep = ";")
 # Look up taxonomic data online using sequence ID
-unite_ex_data <- extract_taxonomy(sequences,
-                                  regex = "^(.*)\\\\|(.*)\\\\|(.*)\\\\|.*\\\\|(.*)$",
-                                key = c(name = "name", seq_id = "obs_id",
-                                       other_id = "obs_info", tax_string = "obs_info"))
+# This might take a while. The speed is dependent on NCBI's servers. 
+file_path <- system.file("extdata", "ncbi_basidiomycetes.fasta", package = "metacoder")
+sequences <- ape::read.FASTA(file_path)
+y <- extract_taxonomy(sequences,
+                      regex = "^.*\\\\|(.*)\\\\|.*\\\\|(.*)\\\\|(.*)$",
+                      key = c(gi_no = "obs_info", "obs_id", desc = "obs_info"),
+                      database = "ncbi")
 }
 
 }
-

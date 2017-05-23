@@ -1,6 +1,6 @@
 #' Fungal ITS Genbank refseq
 #'
-#' A dataset containing information for 299 sequences obtained form NCBI using the following query:
+#' A dataset containing information for 299 sequences obtained from NCBI using the following query:
 #' 
 #' \code{
 #' (18s[All Fields] AND 28s[All Fields]) AND "basidiomycetes"[porgn] AND (refseq[filter] AND ("700"[SLEN] : "800"[SLEN]))
@@ -21,7 +21,7 @@
 "genbank_ex_data"
 
 
-#' Example dataset of comtamination
+#' Example dataset of contamination
 #'
 #' A dataset containing information from 97 NCBI accession numbers representing possible contamination:
 #' 
@@ -160,7 +160,7 @@
 #' }
 #'
 #' @format An object of type \code{\link{taxmap}}
-#' @source \url{https://rdp.cme.msu.edu/}
+#' @source \url{http://rdp.cme.msu.edu/}
 "rdp_ex_data"
 
 

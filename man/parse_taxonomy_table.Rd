@@ -4,13 +4,13 @@
 \alias{parse_taxonomy_table}
 \title{Parse taxonomic data in a tsv/csv file}
 \usage{
-parse_taxonomy_table(file_path, taxon_col, other_col_type = "obs_info",
+parse_taxonomy_table(input, taxon_col, other_col_type = "obs_info",
   header = TRUE, sep = "\\t", max_lines = NULL, comment_prefix = "#",
   ...)
 }
 \arguments{
-\item{file_path}{(\code{character} of length 1)
-The file path to the input file.}
+\item{input}{(\code{character} of length 1)
+The file path to the input file or a \code{data.frame}.}
 
 \item{taxon_col}{(named \code{integer} of length 1)
 The index of the column with taxonomic information, named by the type of information.
@@ -21,7 +21,7 @@ The name of the column can have to following values:
          Requires an internet connection.}
    \item{\code{name}}{The name of a taxon. Not necessarily unique, but are interpretable
          by a particular \code{database}. Requires an internet connection.}
-   \item{\code{class}}{A list of taxa information that consitutes the full taxonomic classification
+   \item{\code{class}}{A list of taxa information that constitutes the full taxonomic classification
          from broad to specific (see \code{class_rev}) for a particular \code{database}. Individual taxa
          are separated by the \code{class_sep} argument and the information is parsed by the
          \code{class_regex} and \code{class_key} arguments.}
@@ -50,4 +50,3 @@ The maximum number of lines to read from the file.}
 \description{
 Parse taxonomic data in a tsv/csv file
 }
-

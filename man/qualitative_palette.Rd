@@ -2,7 +2,7 @@
 % Please edit documentation in R/heat_tree--mapping.R
 \name{qualitative_palette}
 \alias{qualitative_palette}
-\title{The defualt qualitative color palette}
+\title{The default qualitative color palette}
 \usage{
 qualitative_palette()
 }
@@ -16,4 +16,3 @@ Returns the default color palette for qualitative data
 qualitative_palette()
 
 }
-

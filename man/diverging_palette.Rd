@@ -2,7 +2,7 @@
 % Please edit documentation in R/heat_tree--mapping.R
 \name{diverging_palette}
 \alias{diverging_palette}
-\title{The defualt diverging color palette}
+\title{The default diverging color palette}
 \usage{
 diverging_palette()
 }
@@ -16,4 +16,3 @@ Returns the default color palette for diverging data
 diverging_palette()
 
 }
-

@@ -15,10 +15,10 @@
 #' @return \code{list} of \code{data.frame}
 #' 
 #' @keywords internal
-class_from_obs_id <- function(obs_id, database = c("ncbi", "none"), ...) {
+class_from_obs_id <- function(obs_id, database = c("ncbi", "none"), batch_size = 100, ...) {
   
   using_ncbi <- function(obs_id) {
-    taxize::classification(taxize::genbank2uid(obs_id))
+    taxize::classification(taxize::genbank2uid(obs_id, batch_size = batch_size))
   }
   
   using_none <- function(obs_id) {
@@ -60,7 +60,7 @@ class_from_obs_id <- function(obs_id, database = c("ncbi", "none"), ...) {
 #' Any names added to the terms will be used as column names in the output.
 #' At least \code{"taxon_id"} or \code{"name"} must be specified.
 #' Only \code{"taxon_info"} can be used multiple times.
-#' Each term must be one of those decribed below:
+#' Each term must be one of those described below:
 #'  \describe{
 #'    \item{\code{taxon_id}}{A unique numeric id for a taxon for a particular \code{database} (e.g. ncbi accession number).
 #'          Requires an internet connection.}
@@ -76,7 +76,7 @@ class_from_obs_id <- function(obs_id, database = c("ncbi", "none"), ...) {
 #' The character(s) used to separate individual taxa within a classification.
 #' @param class_rev (\code{logical} of length 1)
 #' Used with the \code{class} term in the \code{key} argument.
-#' If \code{TRUE}, the order of taxon data in a classfication is reversed to be specific to broad.
+#' If \code{TRUE}, the order of taxon data in a classification is reversed to be specific to broad.
 #' @param database (\code{character} of length 1) The name of the database that patterns given in 
 #'  \code{parser} will apply to. Valid databases include "ncbi", "itis", "eol", "col", "tropicos",
 #'  "nbn", and "none". \code{"none"} will cause no database to be quired; use this if you want to not use the
@@ -108,6 +108,22 @@ class_from_class <- function(class, class_key, class_regex, class_sep, class_rev
       row.names(x) <- NULL
       x
     })
+  }
+  
+  # Check that the regex matched something
+  not_matched <- vapply(result, function(x) any(is.na(x)), logical(1))
+  if (any(not_matched)) {
+    max_to_display <- 10
+    input_to_display <- class[1:min(c(length(class), max_to_display))]
+    names(input_to_display) <- which(not_matched)[1:min(c(length(class), max_to_display))]
+    error_msg <- paste0('The classification regex "', class_regex,
+                        '" does not match the following ', sum(not_matched),
+                        ' of ', length(not_matched), ' inputs:\n', 
+                        paste0("  ", names(input_to_display), ": ", input_to_display, collapse = "\n"))
+    if (length(class) > max_to_display) {
+      error_msg <- paste(error_msg, "\n   ...")
+    }
+    warning(error_msg)
   }
   
   # Name columns in each classification according to the key

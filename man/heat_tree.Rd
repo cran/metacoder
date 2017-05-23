@@ -2,8 +2,8 @@
 % Please edit documentation in R/heat_tree.R
 \name{heat_tree}
 \alias{heat_tree}
-\alias{heat_tree.default}
 \alias{heat_tree.taxmap}
+\alias{heat_tree.default}
 \title{Plot a taxonomic tree}
 \usage{
 heat_tree(...)
@@ -36,7 +36,7 @@ heat_tree(...)
   node_color_interval = NULL, edge_size_interval = range(edge_size, na.rm =
   TRUE, finite = TRUE), edge_color_interval = NULL, node_label_max = 40,
   edge_label_max = 40, tree_label_max = 40, overlap_avoidance = 1,
-  margin_size = c(0, 0), layout = "reingold-tilford",
+  margin_size = c(0, 0, 0, 0), layout = "reingold-tilford",
   initial_layout = "fruchterman-reingold", make_legend = TRUE,
   title = NULL, title_size = 0.08, node_color_axis_label = NULL,
   node_size_axis_label = NULL, edge_color_axis_label = NULL,
@@ -71,7 +71,7 @@ Default: constant size.}
 Default: relative to node size.}
 
 \item{node_label_size}{See details on size.
-Default: relative to veterx size.}
+Default: relative to vertex size.}
 
 \item{edge_label_size}{See details on size.
 Default: relative to edge size.}
@@ -188,12 +188,12 @@ Default: 20.}
 
 \item{overlap_avoidance}{(\code{numeric})
 The relative importance of avoiding overlaps vs maximizing size range.
-Higher numbers will cause node size optimazation to avoid overlaps more.
+Higher numbers will cause node size optimization to avoid overlaps more.
 Default: \code{1}.}
 
 \item{margin_size}{(\code{numeric} of length 2)
-The horizontal and vertical margins.
-Default: \code{0, 0}.}
+The horizontal and vertical margins. c(left, right, bottom, top).
+Default: \code{0, 0, 0, 0}.}
 
 \item{layout}{The layout algorithm used to position nodes.
 See details on layouts.
@@ -208,7 +208,7 @@ Default: Not used.}
 
 \item{title}{Name to print above the graph.}
 
-\item{title_size}{The size of the title realtive to the rest of the graph.}
+\item{title_size}{The size of the title relative to the rest of the graph.}
 
 \item{node_color_axis_label}{The label on the scale axis corresponding to \code{node_color}.
 Default: The expression given to \code{node_color}.}
@@ -225,7 +225,7 @@ Default: The expression given to \code{edge_size}.}
 \item{background_color}{The background color of the plot.
 Default: Transparent}
 
-\item{output_file}{The path to a file to save the plot in using \code{\link[ggplot2]{ggsave}}. 
+\item{output_file}{The path to one or more files to save the plot in using \code{\link[ggplot2]{ggsave}}. 
 The type of the file will be determined by the extension given.
 Default: Do not save plot.}
 }
@@ -234,7 +234,7 @@ Plots the distribution of values associated with a taxonomic classification.
 Taxonomic classifications can have multiple roots, resulting in multiple trees on the same plot.
 Sizes and colors of nodes, edges, labels, and individual trees can be displayed relative to
 numbers (e.g. taxon statistics, such as abundance).
-The displayed range of colors and sizes can be explicitly defined or automatically genereated.
+The displayed range of colors and sizes can be explicitly defined or automatically generated.
 Various transforamtions can be applied to numbers sizes/colors are mapped to.
 Several types of tree layout algorithms from \code{\link{igraph}} can be used.
 }
@@ -300,7 +300,7 @@ A customized function can also be supplied to do the transformation.
 \section{ranges}{
 
 
-The displayed range of colors and sizes can be explicitly defined or automatically genereated.
+The displayed range of colors and sizes can be explicitly defined or automatically generated.
 Size ranges are specified by supplying a \code{numeric} vector with two values: the minimum and maximum.
 The units used should be between 0 and 1, representing the proportion of a dimension of the graph.
 Since the dimensions of the graph are determined by layout, and not always square, the value
@@ -327,7 +327,7 @@ The following \code{character} values are understood:
   \item{"graphopt"}{Use \code{\link[igraph]{with_graphopt}}. A force-directed layout.}
   \item{"mds"}{Use \code{\link[igraph]{with_mds}}. Multidimensional scaling.}
   \item{"fruchterman-reingold"}{Use \code{\link[igraph]{with_fr}}. A force-directed layout.}
-  \item{"kamada-kawai"}{Use \code{\link[igraph]{with_kk}}. A layout based on a phyisical model of springs.}
+  \item{"kamada-kawai"}{Use \code{\link[igraph]{with_kk}}. A layout based on a physical model of springs.}
   \item{"large-graph"}{Use \code{\link[igraph]{with_lgl}}. Meant for larger graphs.}
   \item{"drl"}{Use \code{\link[igraph]{with_drl}}. A force-directed layout.}
 }
@@ -341,9 +341,10 @@ Intervals are specified by supplying a \code{numeric} vector with two values: th
 These are defined in the same units as element size/color.
 By default, the minimum and maximum equals the range of the values used to infer size/color.
 Setting a custom interval is useful for making size/color in multiple graphs correspond to the same statistics,
-or setting logical bounderies (such as \code{c(0,1)} for proportions.
+or setting logical boundaries (such as \code{c(0,1)} for proportions.
 Note that this is different from the "range" options, which determine the range of graphed sizes/colors.
 }
+
 \examples{
 heat_tree(contaminants,
           node_size = n_obs,
@@ -354,4 +355,3 @@ heat_tree(contaminants,
 
 }
 \keyword{internal}
-
