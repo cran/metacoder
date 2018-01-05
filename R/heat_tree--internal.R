@@ -1,6 +1,6 @@
 #' Bounding box coords for labels
 #' 
-#' Given a position, size, rotation, and justification of a lable, calculate the bounding box coordinates
+#' Given a position, size, rotation, and justification of a label, calculate the bounding box coordinates
 #' 
 #' @param x Horizontal position of center of text grob
 #' @param y Vertical position of center of text grob
@@ -90,10 +90,10 @@ verify_size_range <- function(args) {
   for (arg in args) {
     value <- get(arg, pos = parent.frame())
     if (length(value) != 2) {
-      stop(paste0("Argument ", arg, " must be of length 2."))
+      stop(call. = FALSE, paste0("Argument ", arg, " must be of length 2."))
     }
     if (all(!is.na(value)) && value[2] < value[1]) {
-      stop(paste0("The min value of ", arg, " is greater than its max."))
+      stop(call. = FALSE, paste0("The min value of ", arg, " is greater than its max."))
     }
   }
 }
@@ -110,7 +110,7 @@ verify_trans <- function(args) {
   for (arg in args) {
     value <- get(arg, pos = parent.frame())
     if (! is.function(value) && ! value %in% transform_data()) {
-      stop(paste0("Argument '", arg,
+      stop(call. = FALSE, paste0("Argument '", arg,
                   "' must be a function or the name of a built-in transformation function."))
     }
   }
@@ -127,11 +127,12 @@ verify_size <- function(args) {
   for (arg in args) {
     value <- get(arg, pos = parent.frame())
     if (any(!is.na(value) & is.na(as.numeric(value)))) {
-      stop(paste0("Argument '", arg, "' is not numeric."))
+      stop(paste0("Argument '", arg, "' is not numeric."), call. = FALSE)
     }
     
     if (any(is.infinite(value))) {
-      warning(paste0('Infinite values found for "', arg,
+      warning(call. = FALSE,
+              paste0('Infinite values found for "', arg,
                      '". These will be graphed in the same way as the largest (Inf) or smallest (-Inf) real number supplied.\n'))
     }
   }
@@ -149,7 +150,7 @@ verify_color_range <- function(args) {
   for (arg in args) {
     value <- get(arg, pos = parent.frame())
     if (any(! grepl("^#[0-9a-fA-F]{3,8}$", value) & ! value %in% grDevices::colors())) {
-      stop(paste0("Argument '", arg, "' must be hex color codes or a name returned by 'colors()'"))
+      stop(call. = FALSE, paste0("Argument '", arg, "' must be hex color codes or a name returned by 'colors()'"))
     }
   }
 }
@@ -194,7 +195,7 @@ check_element_length <- function(args) {
 
 #' Transformation functions
 #' 
-#' Functions used by plotting funtions to transform data.
+#' Functions used by plotting functions to transform data.
 #' Calling the function with no parameters returns available function names.
 #' Calling with just the function name returns the transformation function
 #' 
@@ -272,3 +273,73 @@ select_labels <- function(my_data, label_max, sort_by_column, label_column) {
   return(rownames(my_data) %in% labels_shown)
 }
 
+
+#' Splits a taxonomy at a specific level or rank
+#' 
+#' Breaks one taxonomy into multiple, each with a root of a specified distance from the root.
+#' 
+#' @param taxa (\code{character}) Unique taxon IDs for every possible taxon.
+#' @param parents (\code{character}) Unique taxon IDs for the supertaxa of every possible taxon.
+#' @param level (\code{character} or \code{numeric} of length 1)
+#' @param rank (\code{character}) The rank designation (e.g. "genus") corresponding to each observation in
+#' 
+#' @return a \code{list} of taxon id \code{character} vectors. 
+#' \code{taxa}.
+#' 
+#' @keywords internal
+split_by_level <- function(taxa, parents, level, rank = NULL) {
+  class_data <- get_class_from_el(taxa, parents)
+  data <- data.frame(taxa = taxa, parents = parents, 
+                     level = vapply(class_data, length, numeric(1)))
+  if (is.null(rank)) {
+    new_roots <- data$taxa[data$level == level]
+  } else {
+    new_roots <- data$taxa[rank == level]
+  }
+  get_children <- function(id) {
+    index <- vapply(class_data, function(x) id %in% x, logical(1))
+    names(class_data[index])
+  }
+  stats::setNames(lapply(new_roots, get_children), new_roots)
+}
+
+
+#' Get classification for taxa in edge list
+#' 
+#' Extracts the classification of every taxon in a list of unique taxa and their supertaxa.
+#' 
+#' @param taxa (\code{character}) Unique taxon IDs for every possible taxon.
+#' @param parents (\code{character}) Unique taxon IDs for the supertaxa of every possible taxon.
+#' Root taxa should have \code{NA} in this column.
+#' 
+#' @return A list of vectors of taxa IDs. Each list entry corresponds to the \code{taxa} supplied.
+#' 
+#' @keywords internal
+get_class_from_el <- function(taxa, parents) {
+  process_one <- function(x) {
+    output <- character(0)
+    my_next <- x
+    while (length(my_next) != 0 && !is.null(my_next) && !is.na(my_next)) {
+      output <- c(my_next, output)
+      my_next <- parents[taxa == my_next]
+    }
+    return(output)
+  }
+  if (!is.character(taxa)) taxa <- as.character(taxa)
+  if (!is.character(parents)) parents <- as.character(parents)  
+  stats::setNames(lapply(taxa, process_one), taxa)
+}
+
+
+#' Get distance from root of edgelist observations
+#' 
+#' Gets the number of ancestors/supergroups for observations of an edge/adjacency list
+#' 
+#' @param taxa (\code{character}) Unique taxon IDs for every possible taxon.
+#' @param parents (\code{character}) Unique taxon IDs for the supertaxa of every possible taxon.
+#' Root taxa should have \code{NA} in this column.
+#' 
+#' @keywords internal
+edge_list_depth <-  function(taxa, parents) {
+  vapply(get_class_from_el(taxa, parents), length, numeric(1))
+}

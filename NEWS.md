@@ -1,5 +1,43 @@
 # News 
 
+## metacoder 0.2.0
+
+### Bug fixes
+
+* Fixed bug in `subtaxa` that caused an error when all of `subset` is `FALSE`. (issue [#143](https://github.com/grunwaldlab/metacoder/issues/143))
+* Fixed bug in `filter_taxa` that caused an error when all taxa are filtered out. (issue [#144](https://github.com/grunwaldlab/metacoder/issues/144))
+
+### Breaking changes
+
+* All taxmap-related manipulation functions have been moved to the [taxa](https://github.com/ropensci/taxa) package.
+* `heat_tree` now uses the `taxmap` class defined in the [taxa](https://github.com/ropensci/taxa) package.
+* Numerous changes (i.e. upgrades) to `primersearch`
+
+### Improvements
+
+* Upgraded `primersearch` output to be cleaner and have info like the amplicon sequence and primer binding sites.
+* Added functions to identift and remove taxa with ambiguous names like "unknown"
+* code from [ggrepel](https://github.com/slowkow/ggrepel) package now used to avoid overlapping labels. Thanks Kamil Slowikowski!
+* New function `heat_tree_matrix` to make plotting a pairwise matrix of heat trees for comparing treatments.
+* New parser named `parse_mothur_tax_summary` for mothur *.tax.summary file made by [classify.seqs](https://www.mothur.org/wiki/Classify.seqs).
+* New parser named `parse_mothur_taxonomy` for mothur *.taxonomy file made by [classify.seqs](https://www.mothur.org/wiki/Classify.seqs).
+* New parser named `parse_qiime_biom` for the QIIME BIOM output.
+* New parser named `parse_phyloseq` to convert phyloseq objects.
+* New parser named `parse_newick` to parse newick files.
+* New parser named `parse_unite_general` for unite general FASTA release. (issue [#154](https://github.com/grunwaldlab/metacoder/issues/154))
+* New parser named `parse_rdp` for RDP FASTA release. (issue [#160](https://github.com/grunwaldlab/metacoder/issues/160))
+* New parser named `parse_silva_fasta` for SILVA FASTA release. (issue [#162](https://github.com/grunwaldlab/metacoder/issues/162))
+* New function `calc_obs_props` to calculate proportions from observation counts (issue [#167](https://github.com/grunwaldlab/metacoder/issues/167)
+* New parser named `parse_greengenes` for the Greengenes database. (issue [#?](https://github.com/grunwaldlab/metacoder/issues/?))
+* New writer named `write_greengenes` to create an imitation of the Greengenes database format. 
+* New writer named `write_rdp` to create an imitation of the RDP database format. 
+* New writer named `write_mothur_taxonomy` to create an imitation of the mothur taxonomy format. 
+* New writer named `write_unite_general` to create an imitation of the UNITE general FASTA release. 
+* New writer named `write_silva_fasta` to create an imitation of the SILVA FASTA release. 
+* New function named `compare_treatments` to compare multiple samples in multiple treatments, applying a user-defined function.
+* New function named `calc_taxon_abund` to sum observation values for each taxon.
+* Added `col_names` option to `calc_taxon_abund` to set names of output columns.
+
 ##  metacoder 0.1.3 
 
 ### Improvements

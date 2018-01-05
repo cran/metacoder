@@ -1,0 +1,146 @@
+#' Plot a matrix of heat trees
+#' 
+#' Plot a matrix of heat trees for showing parwise comparisons. A larger,
+#' labelled tree serves as a key for the matrix of smaller unlabelled trees. The
+#' data for this function is typically created with \code{\link{compare_groups}},
+#' 
+#' @param obj A \code{\link[taxa]{taxmap}} object
+#' @param dataset The name of a table in \code{obj$data} that is the output of 
+#'   \code{\link{compare_groups}} or in the same format.
+#' @param label_small_trees If \code{TRUE} add labels to small trees as well as 
+#'   the key tree. Otherwise, only the key tree will be labeled.
+#' @param key_size The size of the key tree relative to the whole graph. For
+#'   example, 0.5 means half the width/height of the graph.
+#' @param seed That random seed used to make the graphs.
+#' @param ... Passed to \code{\link{heat_tree}}. Some options will be overwritten.
+#' 
+#' @examples
+#' \dontrun{
+#' # Parse dataset for plotting
+#' x <- parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
+#'                     class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+#'                     class_regex = "^(.+)__(.+)$")
+#' 
+#' # Convert counts to proportions
+#' x$data$otu_table <- calc_obs_props(x, dataset = "tax_data", cols = hmp_samples$sample_id)
+#' 
+#' # Get per-taxon counts
+#' x$data$tax_table <- calc_taxon_abund(x, dataset = "otu_table", cols = hmp_samples$sample_id)
+#' 
+#' # Calculate difference between treatments
+#' x$data$diff_table <- compare_groups(x, dataset = "tax_table",
+#'                                     cols = hmp_samples$sample_id,
+#'                                     groups = hmp_samples$body_site)
+#'
+#' # Plot results (might take a few minutes)
+#' heat_tree_matrix(x,
+#'                  dataset = "diff_table",
+#'                  node_size = n_obs,
+#'                  node_label = taxon_names,
+#'                  node_color = log2_median_ratio,
+#'                  node_color_range = diverging_palette(),
+#'                  node_color_trans = "linear",
+#'                  node_color_interval = c(-3, 3),
+#'                  edge_color_interval = c(-3, 3),
+#'                  node_size_axis_label = "Number of OTUs",
+#'                  node_color_axis_label = "Log2 ratio median proportions")
+#' 
+#' }
+#' 
+#' @export
+heat_tree_matrix <- function(obj, dataset, label_small_trees =  FALSE,
+                             key_size = 0.6, seed = 1, ...) {
+  # Make plot layout
+  diff_table <- obj$data[[dataset]]
+  treatments <- unique(c(diff_table$treatment_1, diff_table$treatment_2))
+  combinations <- t(utils::combn(seq_along(treatments), 2))
+  layout_matrix <- matrix(rep(NA, (length(treatments))^2), nrow = length(treatments))
+  for (index in 1:nrow(combinations)) {
+    layout_matrix[combinations[index, 1], combinations[index, 2]] <- index
+  }
+  
+  
+  
+  # Make individual plots
+  plot_sub_plot <- ifelse(label_small_trees,
+    function(..., make_legend = FALSE) {
+      metacoder::heat_tree(..., make_legend = FALSE)
+    },
+    function(..., node_label = NULL, make_legend = FALSE) {
+      metacoder::heat_tree(..., make_legend = FALSE)
+    }
+  )
+  
+  sub_plots <- lapply(seq_len(nrow(combinations)),
+                      function(index) {
+                        set.seed(seed)
+                        obj %>%
+                          taxa::filter_obs("diff_table",
+                                           obj$data$diff_table$treatment_1 == treatments[combinations[index, 1]] &
+                                             obj$data$diff_table$treatment_2 == treatments[combinations[index, 2]]) %>%
+                          plot_sub_plot(...)
+                      })
+  
+  # Make key plot
+  plot_key_plot <- function(..., node_color = NULL) {
+    heat_tree(..., node_color = "grey")
+  }
+  
+  set.seed(seed)
+  key_plot <- plot_key_plot(obj, ...)
+  
+  calc_subplot_coords <- function(a_matrix, x1 = 0, y1 = 0, x2 = 1, y2 = 1) {
+    # lowerleft = c(x1, y1), upperright = c(x2, y2)
+    x_coords <- seq(from = x1, to = x2, length.out = ncol(a_matrix) + 1)[- (ncol(a_matrix) + 1)]
+    y_coords <- seq(from = y1, to = y2, length.out = nrow(a_matrix) + 1)[- (nrow(a_matrix) + 1)]
+    do.call(rbind, lapply(1:ncol(a_matrix), function(x) data.frame(plot_index = a_matrix[, x],
+                                                                   x = x_coords[x], 
+                                                                   y = rev(y_coords))))
+  }
+  
+  # remove empty column/row
+  layout_matrix <- layout_matrix[! apply(layout_matrix, MARGIN = 1, function(x) all(is.na(x))), ]
+  layout_matrix <- layout_matrix[ , ! apply(layout_matrix, MARGIN = 2, function(x) all(is.na(x)))]
+  
+  # Get subplot layout data
+  matrix_data <- calc_subplot_coords(layout_matrix, x1 = 0.2, y1 = 0.2, x2 = 0.95, y2 = 0.95)
+  matrix_data$treatment_1 <- treatments[combinations[matrix_data$plot_index, 1]]
+  matrix_data$treatment_2 <- treatments[combinations[matrix_data$plot_index, 2]]
+  matrix_data <- matrix_data[!is.na(matrix_data$plot_index), ]
+  matrix_data <- matrix_data[order(matrix_data$plot_index), ]
+  rownames(matrix_data) <- matrix_data$plot_index
+  
+  # Make label data
+  named_row <- which(apply(layout_matrix, MARGIN = 1, function(x) all(!is.na(x))))
+  named_col <- which(apply(layout_matrix, MARGIN = 2, function(x) all(!is.na(x))))
+  horz_label_data <- matrix_data[match(layout_matrix[named_row, ], matrix_data$plot_index), ]
+  vert_label_data <- matrix_data[match(layout_matrix[, named_col], matrix_data$plot_index), ]
+  subgraph_width <- abs(horz_label_data$x[1] - horz_label_data$x[2])
+  subgraph_height <- abs(vert_label_data$y[1] - vert_label_data$y[2])
+  horz_label_data$label_x <- horz_label_data$x + subgraph_width / 2 # center of label
+  horz_label_data$label_y <- 0.96 # bottom of label
+  vert_label_data$label_x <- 0.96 # bottom of rotated label 
+  vert_label_data$label_y <- vert_label_data$y + subgraph_height / 2 # center of rotated label 
+  
+  # Make plot
+  label_size <- 12
+  matrix_plot <- cowplot::ggdraw() + 
+    cowplot::draw_plot(key_plot, x = 0, y = 0, width = key_size, height = key_size) +
+    cowplot::draw_text(gsub("_", " ", horz_label_data$treatment_2), 
+                       x = horz_label_data$label_x, y = horz_label_data$label_y, 
+                       size = label_size, colour = diverging_palette()[1],
+                       hjust = "center", vjust = "bottom") +
+    cowplot::draw_text(gsub("_", " ", vert_label_data$treatment_1), 
+                       x = vert_label_data$label_x, y = vert_label_data$label_y, 
+                       size = label_size, colour = diverging_palette()[3],
+                       hjust = "center", vjust = "bottom", angle = -90)
+  for (i in seq_along(sub_plots)) {
+    matrix_plot <- matrix_plot + cowplot::draw_plot(sub_plots[[i]], 
+                                                    x = matrix_data[i, "x"],
+                                                    y = matrix_data[i, "y"],
+                                                    width = subgraph_width,
+                                                    height = subgraph_height)
+  }
+  
+  return(matrix_plot)
+}

@@ -6,14 +6,14 @@ heat_tree <- function(...) {
 
 #' @param .input An object of type \code{\link{taxmap}}
 #' 
-#' @method heat_tree taxmap
+#' @method heat_tree Taxmap
 #' @export
 #' @rdname heat_tree
-heat_tree.taxmap <- function(.input, ...) {
+heat_tree.Taxmap <- function(.input, ...) {
   # Non-standard argument evaluation
-  data <- taxon_data(.input, #sort_by = hierarchies, 
-                     col_subset = unique(c(taxon_data_cols_used(.input, ...), "taxon_ids", "supertaxon_ids")))
-  arguments <- c(list(taxon_id = data$taxon_ids, supertaxon_id = data$supertaxon_ids),
+  data <- .input$data_used(...)
+  data <- lapply(data, `[`, .input$edge_list$to) # orders everthing the same
+  arguments <- c(list(taxon_id = .input$edge_list$to, supertaxon_id = .input$edge_list$from),
                  lazyeval::lazy_eval(lazyeval::lazy_dots(...), data = data))
   
   # Use variable name for scale axis labels
@@ -37,7 +37,6 @@ heat_tree.taxmap <- function(.input, ...) {
 
 
 
-#===================================================================================================
 #' Plot a taxonomic tree
 #' 
 #' Plots the distribution of values associated with a taxonomic classification.
@@ -45,7 +44,7 @@ heat_tree.taxmap <- function(.input, ...) {
 #' Sizes and colors of nodes, edges, labels, and individual trees can be displayed relative to
 #' numbers (e.g. taxon statistics, such as abundance).
 #' The displayed range of colors and sizes can be explicitly defined or automatically generated.
-#' Various transforamtions can be applied to numbers sizes/colors are mapped to.
+#' Various transformations can be applied to numbers sizes/colors are mapped to.
 #' Several types of tree layout algorithms from \code{\link{igraph}} can be used. 
 #' 
 #' @param taxon_id The unique ids of taxa.
@@ -200,6 +199,12 @@ heat_tree.taxmap <- function(.input, ...) {
 #' The type of the file will be determined by the extension given.
 #' Default: Do not save plot.
 #' 
+#' @param aspect_ratio The aspect_ratio of the plot.
+#' @param repel_labels If \code{TRUE} (Defualt), use the ggrepel package to spread out labels.
+#' @param repel_force The force of which overlapping labels will be repelled from eachother. 
+#' @param repel_iter The number of iterations used when repelling labels
+#' @param verbose If \code{TRUE} print progress reports as the function runs.
+#' 
 #' @param ... (other named arguments)
 #' Passed to the \code{\link{igraph}} layout function used.
 #' 
@@ -209,7 +214,7 @@ heat_tree.taxmap <- function(.input, ...) {
 #' 
 #' The size of nodes, edges, labels, and trees can be mapped to arbitrary numbers.
 #' This is useful for displaying statistics for taxa, such as abundance.
-#' Only the relative size of numbers is used, not the values themeselves.
+#' Only the relative size of numbers is used, not the values themselves.
 #' They can be transformed to make the mapping non-linear using the transformation options.
 #' The range of actual sizes displayed on the graph can be set using the range options.
 #' 
@@ -220,7 +225,7 @@ heat_tree.taxmap <- function(.input, ...) {
 #' 
 #' The colors of nodes, edges, labels, and trees can be mapped to arbitrary numbers.
 #' This is useful for highlighting groups of taxa.
-#' Only the relative size of numbers is used, not the values themeselves.
+#' Only the relative size of numbers is used, not the values themselves.
 #' They can be transformed to make the mapping non-linear using the transformation options.
 #' The range of actual colors displayed on the graph can be set using the range options.
 #' 
@@ -228,7 +233,7 @@ heat_tree.taxmap <- function(.input, ...) {
 #' If a numeric vector is given, it is mapped to a color scale.
 #' Hex values or color names can be used (e.g. \code{#000000} or \code{"black"}).
 #' 
-#' @section labels:
+#' @section Labels:
 #' 
 #' The labels of nodes, edges, and trees can be added.
 #' Node labels are centered over their node.
@@ -237,7 +242,7 @@ heat_tree.taxmap <- function(.input, ...) {
 #' 
 #' Accepts a vector, the same length \code{taxon_id} or a factor of its length.
 #' 
-#' @section transformations:
+#' @section Transformations:
 #' 
 #' Before any numbers specified are mapped to color/size, they can be transformed to make
 #' the mapping non-linear. 
@@ -245,7 +250,7 @@ heat_tree.taxmap <- function(.input, ...) {
 #' A customized function can also be supplied to do the transformation.
 #' 
 #' \describe{
-#'   \item{"linear"}{Proprotional to radius/diameter of node}
+#'   \item{"linear"}{Proportional to radius/diameter of node}
 #'   \item{"area"}{circular area; better perceptual accuracy than \code{"linear"}}
 #'   \item{"log10"}{Log base 10 of radius}
 #'   \item{"log2"}{Log base 2 of radius}
@@ -255,7 +260,7 @@ heat_tree.taxmap <- function(.input, ...) {
 #'   \item{"ln area"}{Log base e of circular area}
 #' }
 #' 
-#' @section ranges:
+#' @section Ranges:
 #' 
 #' The displayed range of colors and sizes can be explicitly defined or automatically generated.
 #' Size ranges are specified by supplying a \code{numeric} vector with two values: the minimum and maximum.
@@ -266,7 +271,7 @@ heat_tree.taxmap <- function(.input, ...) {
 #' Color ranges can be any number of color values as either HEX codes (e.g. \code{#000000}) or
 #' color names (e.g. \code{"black"}).
 #' 
-#' @section layout:
+#' @section Layout:
 #' 
 #' Layouts determine the position of nodes on the graph.
 #' The are implemented using the \code{\link{igraph}} package.
@@ -288,7 +293,7 @@ heat_tree.taxmap <- function(.input, ...) {
 #' }
 #' 
 #' 
-#' @section intervals:
+#' @section Intervals:
 #' 
 #' This is the minimum and maximum of values displayed on the legend scales.
 #' Intervals are specified by supplying a \code{numeric} vector with two values: the minimum and maximum.
@@ -297,15 +302,98 @@ heat_tree.taxmap <- function(.input, ...) {
 #' Setting a custom interval is useful for making size/color in multiple graphs correspond to the same statistics,
 #' or setting logical boundaries (such as \code{c(0,1)} for proportions.
 #' Note that this is different from the "range" options, which determine the range of graphed sizes/colors.
-#'  
-#' @examples 
-#' heat_tree(contaminants,
-#'           node_size = n_obs,
-#'           node_color = n_obs,
-#'           node_label = name,
-#'           tree_label = name,
-#'           layout = "fruchterman-reingold")
 #' 
+#' @section Acknowledgements:
+#' 
+#' This package includes code from the R package ggrepel to handle label overlap
+#' avoidance with permission from the author of ggrepel Kamil Slowikowski. We
+#' included the code instead of depending on ggrepel because we are using
+#' internal functions to ggrepel that might change in the future. We thank Kamil
+#' Slowikowski for letting us use his code and would like to acknowledge his
+#' implementation of the label overlap avoidance used in metacoder.
+#' 
+#' @examples
+#' \dontrun{
+#' # Parse dataset for plotting
+#' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
+#'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+#'                    class_regex = "^(.+)__(.+)$")
+#'                    
+#' # Default appearance:
+#' #  No parmeters are needed, but the default tree is not too useful
+#' heat_tree(x)
+#' 
+#' # A good place to start:
+#' #  There will always be "taxon_names" and "n_obs" variables, so this is a 
+#' #  good place to start. This will shown the number of OTUs in this case. 
+#' heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = n_obs)
+#' 
+#' # Plotting read depth:
+#' #  To plot read depth, you first need to add up the number of reads per taxon.
+#' #  The function `calc_taxon_abund` is good for this. 
+#' x$data$taxon_counts <- calc_taxon_abund(x, dataset = "tax_data")
+#' x$data$taxon_counts$total <- rowSums(x$data$taxon_counts[, -1]) # -1 = taxon_id column
+#' heat_tree(x, node_label = taxon_names, node_size = total, node_color = total)
+#' 
+#' # Plotting multiple variables:
+#' #  You can plot up to 4 quantative variables use node/edge size/color, but it
+#' #  is usually best to use 2 or 3. The plot below uses node size for number of
+#' #  OTUs and color for number of reads and edge size for number of samples
+#' x$data$taxon_counts <- calc_n_samples(x, dataset = "taxon_counts", append = TRUE)
+#' heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = total,
+#'           edge_color = n_samples)
+#' 
+#' # Different layouts:
+#' #  You can use any layout implemented by igraph. You can also specify an
+#' #  initial layout to seed the main layout with.
+#' heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = n_obs,
+#'           layout = "davidson-harel")
+#' heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = n_obs,
+#'           layout = "davidson-harel", initial_layout = "reingold-tilford")
+#' 
+#' # Axis labels:
+#' #  You can add custom labeles to the legends
+#' heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = total,
+#'           edge_color = n_samples, node_size_axis_label = "Number of OTUs", 
+#'           node_color_axis_label = "Number of reads",
+#'           edge_color_axis_label = "Number of samples")
+#'           
+#' # Overlap avoidance:
+#' #  You can change how much node overlap avoidance is used.
+#' heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = n_obs,
+#'           overlap_avoidance = .5)
+#'           
+#' # Label overlap avoidance
+#' #  You can modfiy how label scattering is handled using the `replel_force` and
+#' `repel_iter` options. You can turn off label scattering using the `repel_labels` option.
+#' heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = n_obs,
+#'           repel_force = 2, repel_iter = 20000)
+#' heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = n_obs,
+#'           repel_labels = FALSE)
+#' 
+#' # Setting the size of graph elements: 
+#' #  You can force nodes, edges, and lables to be a specific size/color range instead
+#' #  of letting the function optimize it. These options end in `_range`.
+#' heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = n_obs,
+#'           node_size_range = c(0.01, .1))
+#' heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = n_obs,
+#'           edge_color_range = c("black", "#FFFFFF"))
+#' heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = n_obs,
+#'           node_label_size_range = c(0.02, 0.02))
+#' 
+#' # Setting the transformation used:
+#' #  You can change how raw statistics are converted to color/size using options
+#' #  ending in _trans.
+#' heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = n_obs,
+#'           node_size_trans = "log10 area")
+#' 
+#' # Setting the interval displayed:
+#' #  By default, the whole range of the statistic provided will be displayed.
+#' #  You can set what range of values are displayed using options ending in `_interval`.
+#' heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = n_obs,
+#'           node_size_interval = c(10, 100))
+#' 
+#' }
 #' @keywords internal
 #' @method heat_tree default
 #' @rdname heat_tree
@@ -367,9 +455,9 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
                               edge_size_interval = range(edge_size, na.rm = TRUE, finite = TRUE),
                               edge_color_interval = NULL,
                               
-                              node_label_max = 40,
-                              edge_label_max = 40,
-                              tree_label_max = 40,
+                              node_label_max = 500,
+                              edge_label_max = 500,
+                              tree_label_max = 500,
                               
                               overlap_avoidance = 1,
                               margin_size = c(0, 0, 0, 0),
@@ -387,13 +475,21 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
                               background_color = "#FFFFFF00",
                               output_file = NULL,
                               
+                              aspect_ratio = 1,
+                              repel_labels = TRUE,
+                              repel_force = 1,
+                              repel_iter = 1000,
+                              
+                              verbose = FALSE,
+                              
                               ...) {
   #| ### Verify arguments =========================================================================
   if (length(taxon_id) != length(supertaxon_id)) {
     stop("'taxon_id' and 'supertaxon_id' must be of equal length.")
   }
   if (length(taxon_id) == 0) {
-    stop("'taxon_id' and 'supertaxon_id' are empty.")
+    warning("'taxon_id' and 'supertaxon_id' are empty. Returning NULL.")
+    return(NULL)
   }
   if (length(unique(taxon_id)) != length(taxon_id)) {
     stop("All values of 'taxon_id' are not unique.")
@@ -490,6 +586,7 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
   #| an `igraph` graph object and then the layout is generated for that object. 
   #|
   #| #### Make a graph for each root in the graph -------------------------------------------------
+  my_print("Calculating layout for ", nrow(data), " taxa...", verbose = verbose)
   get_sub_graphs <- function(taxa) {
     if (length(taxa) == 1) {
       # Make a graph with only a single node
@@ -555,10 +652,22 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
   data$vx_plot <- coords[data$tid_user, 1]
   data$vy_plot <- coords[data$tid_user, 2]
   
+  # Rescale to constant size
+  my_range <- range(c(data$vx_plot, data$vy_plot))
+  to_scale <- c(0, 1)
+  data$vx_plot <- rescale(data$vx_plot, to = to_scale, from = my_range)
+  data$vy_plot <- rescale(data$vy_plot, to = to_scale, from = my_range)
+  
+  #| ### Set aspect ration
+  data$vx_plot <- data$vx_plot * aspect_ratio
+  
   #| ### Core plot data ===========================================================================
   #|
   #| #### Optimize node size range --------------------------------------------------------------
   #|
+  if (any(is.na(node_size_range))) {
+    my_print("Optmizing node size range...", verbose = verbose)
+  }
   # Get range of potential node size ranges - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (nrow(data) > 1) {
     all_pairwise <- molten_dist(x = data$vx_plot, y = data$vy_plot) # get distance between all nodes
@@ -566,12 +675,12 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
     y_diff <- max(data$vy_plot) - min(data$vy_plot)
     square_side_length <- sqrt(x_diff * y_diff)
     if (is.na(node_size_range[1])) { # if minimum node size not set
-      min_range <- c(square_side_length / 1000, min(all_pairwise$distance))
+      min_range <- c(0, min(all_pairwise$distance))
     } else {
       min_range <- rep(node_size_range[1], 2) * square_side_length
     }
     if (is.na(node_size_range[2])) { # if maximum node size not set
-      max_range <- c(min_range[1], square_side_length / 4)
+      max_range <- c(min_range[1], square_side_length / 5)
     } else {
       max_range <- c(node_size_range[2], 2) * square_side_length
     }
@@ -579,9 +688,9 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
       vsr_plot <- node_size_range * square_side_length
     } else {
       # Subset pairwise pairs to increase speed - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      max_important_pairs <- 2000 # Takes into account both size and distance
-      max_biggest_pairs <- 2000
-      max_closest_pairs <- 2000
+      max_important_pairs <- 1000 # Takes into account both size and distance
+      max_biggest_pairs <- 1000
+      max_closest_pairs <- 1000
       if (nrow(all_pairwise) > sum(max_important_pairs, max_biggest_pairs, max_closest_pairs)) {
         all_pairwise$size_sum <- data$vs_trans[all_pairwise$index_1] + data$vs_trans[all_pairwise$index_2]
         all_pairwise$importance <- all_pairwise$size_sum / all_pairwise$distance
@@ -591,38 +700,39 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
                          order(all_pairwise$distance)[1:max_closest_pairs])
         all_pairwise <- all_pairwise[pair_subset, ]
       }
-      # Define search space for potential node size ranges  - - - - - - - - - - - - - - - - - - - - -
-      get_search_space <- function(min_range, max_range, breaks_per_dim) {
-        min_breaks <- seq(from = min_range[1], to = min_range[2], length.out = breaks_per_dim)
-        max_breaks <- seq(from = max_range[1], to = max_range[2], length.out = breaks_per_dim)
-        max_breaks <- rescale(max_breaks^4, to = max_range)
-        space <- data.frame(min = rep(min_breaks, each = length(max_breaks)),
-                            max = rep(max_breaks, length(min_breaks)))
-        space[space$min <= space$max, ]
-      }
-      search_space <- get_search_space(min_range, max_range, breaks_per_dim = 35)
-      search_space$range_size <- search_space$max - search_space$min
-      # Calculate node overlap resulting from possible ranges - - - - - - - - - - - - - - - - - - - -
       find_overlap <- function(a_min, a_max, distance) {
         scaled_vs <- rescale(data$vs_t, to = c(a_min, a_max), from = node_size_interval_trans)
         names(scaled_vs) <- data$tid_user
         gap <- distance$distance - scaled_vs[distance$index_1] - scaled_vs[distance$index_2]
-        gap <- ifelse(gap < 0, abs(gap), 0)
-        gap <- gap^2
-        sqrt(sum(gap))
-      } 
-      search_space$overlap <- apply(search_space, MARGIN = 1,
-                                    function(x) find_overlap(x["min"], x["max"], all_pairwise))
+        overlap <- ifelse(gap < 0, abs(gap), 0)
+        overlap <- (overlap ^ 2) / (scaled_vs[distance$index_1] ^ 2 + scaled_vs[distance$index_2] ^ 2)
+        mean(overlap)
+      }
       
       # Choose base range based on optimality criteria  - - - - - - - - - - - - - - - - - - - - - - - -
-      optimality_stat <- function(overlap, range_size, minimum) {
-        overlap_weight <- 1 / nrow(data)^(1/3)
-        minimum_weight <- 75 / sqrt(nrow(data))
-        (1 + range_size + minimum * minimum_weight) / (1 + overlap * overlap_avoidance * overlap_weight)
+      optimality_stat <- function(minimum, maximum) {
+        overlap <- find_overlap(minimum, maximum, all_pairwise)
+        ideal_min <- 0.02
+        ideal_max <- 0.3
+        ideal_range <- .1
+        minimum <- minimum / square_side_length
+        maximum <- maximum / square_side_length
+        min_size_score <- min(c(1, 1 - (ideal_min - minimum) / ideal_min))
+        max_size_score <- min(c(1, 1 - (maximum - ideal_max) / maximum))
+        range_prop <- minimum / maximum 
+        range_size_score <- min(c(1, 1 - abs(range_prop - ideal_range)))
+        overlap_score <- min(c(1, 1 - overlap ^ (0.08 / overlap_avoidance) )) # Totally observation based; might need to be rethought
+        result <- prod(c(min_size_score, max_size_score, range_size_score, overlap_score))
+        # print(c(min_size_score, max_size_score, range_size_score, overlap_score, result))
+        return(result)
       }
-      search_space$opt_stat <- apply(search_space, MARGIN = 1,
-                                     function(x) optimality_stat(x["overlap"], x["range_size"], x["min"]))
-      vsr_plot <- unlist(search_space[which.max(search_space$opt_stat), c("min", "max")])
+      
+      # Use genetic algorithm to pick range
+      ga_result <- GA::ga(type = "real-valued", 
+                          fitness =  function(x) optimality_stat(x[1], x[2]),
+                          min = c(min_range[1], max_range[1]), max = c(min_range[2], max_range[2]),
+                          maxiter = 40, run = 30, popSize = 70, monitor = FALSE, parallel = FALSE)
+      vsr_plot <- as.vector(ga_result@solution)
     }
   } else {
     square_side_length = 1
@@ -632,10 +742,10 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
   #|
   #| #### Infer edge size range -------------------------------------------------------------------
   #|
-  infer_size_range <- function(specified_range, reference_range, defualt_scale) {
+  infer_size_range <- function(specified_range, reference_range, default_scale) {
     result <- specified_range * square_side_length
     if (is.na(result[1]) && is.na(result[2])) { # If the user has not set range
-      result <- reference_range * defualt_scale
+      result <- reference_range * default_scale
     } else if (is.na(result[1])) { # If the user has set a maximum but not a minimum
       result[1] <- result[2] * reference_range[1] / reference_range[2]
     } else if (is.na(result[2])) { # If the user has set a minimum but not a maximum
@@ -644,7 +754,7 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
     return(result)
   }
   
-  esr_plot <- infer_size_range(edge_size_range, vsr_plot, defualt_scale = 0.5)
+  esr_plot <- infer_size_range(edge_size_range, vsr_plot, default_scale = 0.5)
   data$es_plot <- rescale(data$es_t, to = esr_plot, from = edge_size_interval_trans)
   #|
   #| #### Infer tree size range -------------------------------------------------------------------
@@ -667,9 +777,9 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
     data$tls_user <- sqrt(data$tree_area)
     data$tls_trans <- apply_trans("tls_user") 
   }
-  vlsr_plot <- infer_size_range(node_label_size_range, vsr_plot, defualt_scale = 0.8)
-  elsr_plot <- infer_size_range(edge_label_size_range, esr_plot, defualt_scale = 0.8)
-  tlsr_plot <- infer_size_range(tree_label_size_range, tsr_plot, defualt_scale = 0.1)
+  vlsr_plot <- infer_size_range(node_label_size_range, vsr_plot, default_scale = 0.8)
+  elsr_plot <- infer_size_range(edge_label_size_range, esr_plot, default_scale = 0.8)
+  tlsr_plot <- infer_size_range(tree_label_size_range, tsr_plot, default_scale = 0.1)
   data$vls_plot <- rescale(data$vls_trans, to = vlsr_plot)
   data$els_plot <- rescale(data$els_trans, to = elsr_plot)
   data$tls_plot <- rescale(data$tls_trans, to = tlsr_plot)
@@ -738,7 +848,8 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
                             size = vl_data$vls_plot,
                             color = vl_data$vlc_plot,
                             rotation = 0,
-                            justification = "center")
+                            justification = "center",
+                            group = "nodes")
   } else {
     text_data <- NULL
   }
@@ -771,7 +882,8 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
                                   size = el_data$els_plot,
                                   color = el_data$elc_plot,
                                   rotation = el_data$el_rotation,
-                                  justification = justification))
+                                  justification = justification,
+                                  group = "edges"))
   }
   # Get tree label data - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   data$tl_is_shown <- FALSE
@@ -798,30 +910,109 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
                                   size = title_data$tls_plot,
                                   color = title_data$tlc_plot,
                                   rotation = 0,
-                                  justification = "center"))
+                                  justification = "center",
+                                  group = "trees"))
   }
+  
+  
+  
+  # Get range data ---------------------------------------------------------------------------------
+  get_limits <- function() {
+    label_corners <- label_bounds(label = text_data$label, x = text_data$x, y = text_data$y,
+                                  height = text_data$size, rotation = text_data$rotation,
+                                  just = text_data$justification)
+    x_points <- c(element_data$x, label_corners$x)
+    y_points <- c(element_data$y, label_corners$y)
+    margin_size_plot <- margin_size * square_side_length
+    x_range <- c(min(x_points) - margin_size_plot[1], max(x_points) + margin_size_plot[2]) 
+    y_range <- c(min(y_points) - margin_size_plot[3], max(y_points) + margin_size_plot[4]) 
+    return(list(x = x_range, y = y_range))
+  }
+  
+  # Add tree title data - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ranges <- get_limits() # UGLY HACK! FIX!
+  if (! is.null(title)) {
+    title_size <- diff(ranges$x) * title_size
+    text_data <- rbind(text_data,
+                       data.frame(stringsAsFactors = FALSE, 
+                                  label = title,
+                                  x = mean(ranges$x),
+                                  y = max(ranges$y) + title_size * 0.5,
+                                  size = title_size,
+                                  color = "#000000",
+                                  rotation = 0,
+                                  justification = "center-bottom",
+                                  group = "title"))
+  }
+  
+  
+  # Repel labels
+  ranges <- get_limits() # UGLY HACK! FIX!
+  reformat_bounds <- function(bounds) {
+    if (is.null(bounds)) {
+      return(NULL)
+    }
+    bounds$label <- factor(bounds$label, levels=unique(bounds$label)) # keep order when split
+    x_coords <- split(bounds$x, rep(seq_len(nrow(text_data)), each = 4))
+    y_coords <- split(bounds$y, rep(seq_len(nrow(text_data)), each = 4))
+    data.frame(label = text_data$label,
+               color = text_data$color,
+               rotation = rad_to_deg(text_data$rotation),
+               group = text_data$group,
+               xmin = vapply(x_coords, min, numeric(1)),
+               xmax = vapply(x_coords, max, numeric(1)),
+               ymin = vapply(y_coords, min, numeric(1)),
+               ymax = vapply(y_coords, max, numeric(1)),
+               stringsAsFactors = FALSE)
+  }
+  
+  if (!is.null(text_data)) {
+    bounds <- label_bounds(label = text_data$label, x = text_data$x, y = text_data$y,
+                           height = text_data$size, rotation = text_data$rotation,
+                           just = text_data$justification)
+    bounds <- reformat_bounds(bounds)
+    
+    if (repel_labels) {
+      movable <- text_data$group != "legend"
+      text_data[movable, c("x", "y")] <- repel_boxes(data_points = as.matrix(text_data[movable, c("x", "y")]),
+                                                     boxes = as.matrix(bounds[movable, c("xmin", "ymin", "xmax", "ymax")]),
+                                                     point_padding_x = 0, point_padding_y = 0,
+                                                     xlim = ranges$x,
+                                                     ylim = ranges$y,
+                                                     # hjust = 0.5,
+                                                     # vjust = 0.5,
+                                                     force = 1e-06 * repel_force,
+                                                     maxiter = repel_iter,
+                                                     direction = "both")
+      bounds <- label_bounds(label = text_data$label, x = text_data$x, y = text_data$y,
+                             height = text_data$size, rotation = text_data$rotation,
+                             just = text_data$justification)
+      bounds <- reformat_bounds(bounds)
+    }
+  } else {
+    bounds <- NULL
+  }
+  
+  
+  
   #|
   #| #### Make node legend -----------------------------------------------------------------------
   #|
+  my_print("Making legends...", verbose = verbose)
   if (make_legend) {
     legend_length <- square_side_length * 0.3 
     
+    # right_plot_boundry <- max(c(element_data[element_data$y <= legend_length + min(element_data$y), "x"],
+    #       bounds[bounds$ymin <= legend_length +  min(element_data$y), "xmax"]))
     
-    y_in_legend_space <-  (!missing(node_size) & element_data$y <  min(element_data$y) + legend_length) | 
-      (!missing(edge_size) & element_data$y >  max(element_data$y) - legend_length)
-    legend_min_x <- max(c(element_data$x[y_in_legend_space], min(element_data$x)))  # The furthest left allowed by graph components
-    legend_ideal_x <- max(element_data$x) - diff(range(data$vs_plot) * 2) - square_side_length * 0.1 # The ideal position of the legend
-    
-    # right_plot_boundry <- max(c(legend_min_x, legend_ideal_x))
-    if (legend_ideal_x >= legend_min_x) {
-      right_plot_boundry <- legend_ideal_x + diff(range(element_data$x)) * 0.05 # needs to be changed; hackish
+    if (is.null(bounds)) {
+      right_plot_boundry <- max(element_data$x)
     } else {
-      right_plot_boundry <- legend_min_x + diff(range(element_data$x)) * 0.05 # needs to be changed; hackish
+      right_plot_boundry <- max(c(element_data$x, bounds$xmax))
     }
     
-    
     node_legend <- make_plot_legend(x = right_plot_boundry,
-                                    y = min(element_data$y), 
+                                    y = min(element_data$y) * 0.9, 
                                     length = legend_length, 
                                     width_range = vsr_plot * 2, 
                                     width_trans_range = range(data$vs_trans) * 2,
@@ -840,8 +1031,12 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
     #|
     #| #### Make edge legend -----------------------------------------------------------------------
     #|
+    
+    # right_plot_boundry <- max(c(element_data[element_data$y >= max(element_data$y) - legend_length, "x"],
+    #                             bounds[bounds$ymax >= max(element_data$y) - legend_length, "xmin"]))
+    
     edge_legend <- make_plot_legend(x = right_plot_boundry,
-                                    y = max(element_data$y) - legend_length - 0.1 * legend_length, 
+                                    y = max(element_data$y) - legend_length * 1.3, 
                                     length = legend_length, 
                                     width_range = esr_plot * 2, 
                                     width_trans_range = range(data$vs_trans) * 2,
@@ -859,37 +1054,23 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
                                     hide_color = missing(edge_color))
     element_data <- rbind(element_data, node_legend$shapes, edge_legend$shapes)
     text_data <- rbind(text_data, node_legend$labels, edge_legend$labels)
+    bounds <- label_bounds(label = text_data$label, x = text_data$x, y = text_data$y,
+                           height = text_data$size, rotation = text_data$rotation,
+                           just = text_data$justification)
+    bounds <- reformat_bounds(bounds)
   } else {
     legend_data <- NULL
   }
-  # Get range data ---------------------------------------------------------------------------------
-  get_limits <- function() {
-    label_corners <- label_bounds(label = text_data$label, x = text_data$x, y = text_data$y,
-                                  height = text_data$size, rotation = text_data$rotation,
-                                  just = text_data$justification)
-    x_points <- c(element_data$x, label_corners$x)
-    y_points <- c(element_data$y, label_corners$y)
-    margin_size_plot <- margin_size * square_side_length
-    x_range <- c(min(x_points) - margin_size_plot[1], max(x_points) + margin_size_plot[2]) 
-    y_range <- c(min(y_points) - margin_size_plot[3], max(y_points) + margin_size_plot[4]) 
-    return(list(x = x_range, y = y_range))
-  }
-  ranges <- get_limits() # UGLY HACK! FIX!
   
-  # Add tree title data - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  if (! is.null(title)) {
-    title_size <- diff(ranges$x) * title_size
-    text_data <- rbind(text_data,
-                       data.frame(stringsAsFactors = FALSE, 
-                                  label = title,
-                                  x = mean(ranges$x),
-                                  y = max(ranges$y) + title_size * 0.5,
-                                  size = title_size,
-                                  color = "#000000",
-                                  rotation = 0,
-                                  justification = "center-bottom"))
-  }
+  
+  
+  
   #| ### Draw plot ================================================================================
+  # text_boxes <-  label_bounds(label = text_data$label, x = text_data$x, y = text_data$y,  # debug
+  #                                       height = text_data$size, rotation = text_data$rotation,
+  #                                       just = text_data$justification)
+  # text_boxes$group <- rep(seq_along(text_data$label), each = 4)  # debug
+  my_print("Plotting graph...", verbose = verbose)
   result = tryCatch({
     
     ranges <- get_limits()
@@ -898,8 +1079,9 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
                             fill = element_data$color) +
       ggplot2::guides(fill = "none") +
       ggplot2::coord_fixed(xlim = ranges$x, ylim = ranges$y) +
-      ggplot2::scale_y_continuous(expand = c(0,0), limits = ranges$y) +
+      ggplot2::scale_y_continuous(expand = c(0,0), limits = ranges$y) + 
       ggplot2::scale_x_continuous(expand = c(0,0), limits = ranges$x) +
+      # ggplot2::geom_polygon(data = text_boxes, mapping = ggplot2::aes(x = x, y = y, group = group), color = "black", fill = NA) + # debug
       ggplot2::theme(panel.grid = ggplot2::element_blank(), 
                      panel.background = ggplot2::element_rect(fill = background_color, colour = background_color),
                      plot.background = ggplot2::element_rect(fill = background_color, colour = background_color),
@@ -908,10 +1090,25 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
                      axis.ticks = ggplot2::element_blank(), 
                      axis.line  = ggplot2::element_blank(),
                      plot.margin = grid::unit(c(0,0,0,0) , "in"))
-    if (!is.null(text_data)) {
-      text_grobs <- do.call(make_text_grobs, c(text_data, list(x_range = ranges$x, y_range = ranges$y)))
-      for (a_grob in text_grobs) {
-        the_plot <- the_plot + ggplot2::annotation_custom(grob = a_grob)
+    
+    # Plot text..
+    
+    if (! is.null(bounds)) {
+      bounds <- bounds[bounds$label != "" & ! is.na(bounds$label), ]
+      if (nrow(bounds) > 0) {
+        the_plot <- the_plot + ggfittext::geom_fit_text(data = bounds, 
+                                                        grow = TRUE,
+                                                        min.size = 0,
+                                                        # reflow = TRUE,
+                                                        color = bounds$color,
+                                                        padding.x = grid::unit(0, "mm"),
+                                                        padding.y = grid::unit(0, "mm"),
+                                                        ggplot2::aes_string(label = "label",
+                                                                            xmin = "xmin",
+                                                                            xmax = "xmax",
+                                                                            ymin = "ymin",
+                                                                            ymax = "ymax",
+                                                                            angle = "rotation")) 
       }
     }
     
@@ -928,10 +1125,10 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
   }, error = function(msg) {
     if (grepl(msg$message, "Error: evaluation nested too deeply: infinite recursion / options(expressions=)?", fixed = TRUE)) {
       stop(paste(msg, sep = "\n", 
-                  "NOTE: This error typically occurs because of too many text labels being printed.", 
-                  "You can avoid it by increasing the value of `expressions` in the global options:",
-                  "    * How to see the current value: options('expressions')",
-                  "    * How to increase the value:    options(expressions = 100000)"))
+                 "NOTE: This error typically occurs because of too many text labels being printed.", 
+                 "You can avoid it by increasing the value of `expressions` in the global options:",
+                 "    * How to see the current value: options('expressions')",
+                 "    * How to increase the value:    options(expressions = 100000)"))
     } else {
       stop(msg)
     }
@@ -941,5 +1138,4 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
   
   return(the_plot)
 }
-
 

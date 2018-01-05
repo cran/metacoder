@@ -1,69 +1,105 @@
-## ----home_setup, echo=FALSE, warning=FALSE, message=FALSE---------------------
-options(width = 80)
+## ----home_setup, echo=FALSE, warning=FALSE, message=FALSE-------------------------------
+options(width = 90)
 set.seed(1)
 # Knitr
 library(knitr)
 library(grid)
-opts_chunk$set(dev = 'png', fig.width = 7, fig.height = 7, warning = FALSE, message = FALSE)
+opts_chunk$set(dev = 'png', fig.width = 7, fig.height = 7, warning = TRUE,
+               message = TRUE)
 
-## ----home_parse, warning=FALSE, message=FALSE---------------------------------
-# Load the package
+## ---------------------------------------------------------------------------------------
 library(metacoder)
-# Load the input FASTA file
-seqs <- seqinr::read.fasta(system.file("extdata",
-                                       "mothur_16S_training_subset.fasta.gz",
-                                       package = "metacoder"))
-# Print an example of the sequence headers
-cat(names(seqs)[1])
-# Extract the taxonomic information of the sequences
-data <- extract_taxonomy(seqs, regex = "^(.*)\\t(.*)",
-                         key = c(id = "obs_info", "class"),
-                         class_sep = ";")
+print(hmp_otus)
+print(hmp_samples)
 
-## -----------------------------------------------------------------------------
-print(data)
+## ---------------------------------------------------------------------------------------
+obj <- parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
+                      class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+                      class_regex = "^(.+)__(.+)$")
 
-## -----------------------------------------------------------------------------
-taxon_data(data)
 
-## ----home_plot_1--------------------------------------------------------------
-heat_tree(data, node_size = n_obs, node_label = name, node_color = n_obs)
+## ---------------------------------------------------------------------------------------
+print(obj)
 
-## ----home_plot_3--------------------------------------------------------------
-set.seed(1)
-heat_tree(filter_taxa(data, name == "Archaea", subtaxa = TRUE),
-          node_size = n_obs, node_label = name, 
-          node_color = n_obs, layout = "fruchterman-reingold")
+## ---------------------------------------------------------------------------------------
+obj$data$tax_data <- zero_low_counts(obj, "tax_data", min_count = 5)
 
-## ----home_plot_4--------------------------------------------------------------
-subsetted <- filter_taxa(data, n_supertaxa > 0)
-set.seed(2)
-heat_tree(subsetted, node_size = n_obs, node_label = name,
-          node_color = n_obs, tree_label = name)
+## ---------------------------------------------------------------------------------------
+no_reads <- rowSums(obj$data$tax_data[, hmp_samples$sample_id]) == 0
+sum(no_reads)
 
-## ----home_plot_5--------------------------------------------------------------
-set.seed(1)
-filter_taxa(data, n_supertaxa <= 4) %>%
-  heat_tree(node_size = n_obs, node_label = name, node_color = n_obs)
+## ---------------------------------------------------------------------------------------
+obj <- filter_obs(obj, "tax_data", ! no_reads, drop_taxa = TRUE)
+print(obj)
 
-## ----home_plot_sample---------------------------------------------------------
-set.seed(1)
-sampled <- taxonomic_sample(subsetted, max_counts = c("3" = 10, "5" = 1), min_counts = c("5" = 1))
-sampled <- filter_taxa(sampled, n_obs > 0, subtaxa = FALSE) 
+## ---------------------------------------------------------------------------------------
+obj$data$tax_data <- calc_obs_props(obj, "tax_data")
+print(obj)
 
-## ----home_plot_6--------------------------------------------------------------
-set.seed(3)
-heat_tree(sampled, 
+## ---------------------------------------------------------------------------------------
+obj$data$tax_abund <- calc_taxon_abund(obj, "tax_data",
+                                       cols = hmp_samples$sample_id)
+print(obj)
+
+## ---------------------------------------------------------------------------------------
+obj$data$tax_occ <- calc_n_samples(obj, "tax_abund", groups = hmp_samples$body_site)
+print(obj)
+
+## ---------------------------------------------------------------------------------------
+heat_tree(obj, 
+          node_label = taxon_names,
           node_size = n_obs,
-          node_label_size = n_obs * ifelse(n_supertaxa == 3, 10, 1),
-          edge_size = n_obs, 
-          node_label = n_obs,
-          node_color = n_obs,
-          tree_label = name)
+          node_color = Nose, 
+          node_size_axis_label = "OTU count",
+          node_color_axis_label = "Samples with reads")
 
-## ----home_plot_7--------------------------------------------------------------
-set.seed(6)
-sample_n_obs(subsetted, size = 400, taxon_weight = 1 / n_obs, unobserved = FALSE) %>%
-  heat_tree(node_size = n_obs, node_label = n_obs, overlap_avoidance = 0.5,
-            node_color = n_obs, tree_label = name)
+## ---- eval = FALSE----------------------------------------------------------------------
+#  heat_tree(obj,
+#            node_label = obj$taxon_names(),
+#            node_size = obj$n_obs(),
+#            node_color = obj$data$tax_occ$Nose,
+#            node_size_axis_label = "OTU count",
+#            node_color_axis_label = "Samples with reads")
+
+## ---- warning = FALSE-------------------------------------------------------------------
+obj$data$diff_table <- compare_groups(obj, dataset = "tax_abund",
+                                      cols = hmp_samples$sample_id,
+                                      groups = hmp_samples$sex)
+print(obj$data$diff_table)
+
+## ---------------------------------------------------------------------------------------
+heat_tree(obj, 
+          node_label = taxon_names,
+          node_size = n_obs,
+          node_color = log2_median_ratio, 
+          node_color_interval = c(-2, 2),
+          node_color_range = c("cyan", "gray", "tan"),
+          node_size_axis_label = "OTU count",
+          node_color_axis_label = "Log 2 ratio of median proportions")
+
+## ---------------------------------------------------------------------------------------
+obj$data$diff_table$wilcox_p_value <- p.adjust(obj$data$diff_table$wilcox_p_value,
+                                               method = "fdr")
+
+## ---------------------------------------------------------------------------------------
+hist(obj$data$diff_table$wilcox_p_value) 
+
+## ---- warning = FALSE-------------------------------------------------------------------
+obj$data$diff_table <- compare_groups(obj, dataset = "tax_abund",
+                                      cols = hmp_samples$sample_id,
+                                      groups = hmp_samples$body_site)
+print(obj$data$diff_table)
+
+## ---------------------------------------------------------------------------------------
+heat_tree_matrix(obj,
+                 dataset = "diff_table",
+                 node_size = n_obs,
+                 node_label = taxon_names,
+                 node_color = log2_median_ratio,
+                 node_color_range = diverging_palette(),
+                 node_color_trans = "linear",
+                 node_color_interval = c(-3, 3),
+                 edge_color_interval = c(-3, 3),
+                 node_size_axis_label = "Number of OTUs",
+                 node_color_axis_label = "Log2 ratio median proportions")
 
