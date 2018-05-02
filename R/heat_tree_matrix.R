@@ -12,6 +12,9 @@
 #' @param key_size The size of the key tree relative to the whole graph. For
 #'   example, 0.5 means half the width/height of the graph.
 #' @param seed That random seed used to make the graphs.
+#' @param output_file The path to one or more files to save the plot in using \code{\link[ggplot2]{ggsave}}. 
+#' The type of the file will be determined by the extension given.
+#' Default: Do not save plot.
 #' @param ... Passed to \code{\link{heat_tree}}. Some options will be overwritten.
 #' 
 #' @examples
@@ -49,9 +52,11 @@
 #' 
 #' @export
 heat_tree_matrix <- function(obj, dataset, label_small_trees =  FALSE,
-                             key_size = 0.6, seed = 1, ...) {
+                             key_size = 0.6, seed = 1, output_file = NULL, ...) {
+  # Get plot data table 
+  diff_table <- get_taxmap_table(obj, dataset)
+  
   # Make plot layout
-  diff_table <- obj$data[[dataset]]
   treatments <- unique(c(diff_table$treatment_1, diff_table$treatment_2))
   combinations <- t(utils::combn(seq_along(treatments), 2))
   layout_matrix <- matrix(rep(NA, (length(treatments))^2), nrow = length(treatments))
@@ -59,15 +64,13 @@ heat_tree_matrix <- function(obj, dataset, label_small_trees =  FALSE,
     layout_matrix[combinations[index, 1], combinations[index, 2]] <- index
   }
   
-  
-  
   # Make individual plots
-  plot_sub_plot <- ifelse(label_small_trees,
-    function(..., make_legend = FALSE) {
-      metacoder::heat_tree(..., make_legend = FALSE)
+  plot_sub_plot <- ifelse(label_small_trees, # This odd thing is used to overwrite options without evaluation
+    function(..., make_node_legend = FALSE, make_edge_legend = FALSE, output_file = NULL) {
+      metacoder::heat_tree(..., make_node_legend = FALSE, make_edge_legend = FALSE, output_file = NULL)
     },
-    function(..., node_label = NULL, make_legend = FALSE) {
-      metacoder::heat_tree(..., make_legend = FALSE)
+    function(..., node_label = NULL, make_node_legend = FALSE, make_edge_legend = FALSE, output_file = NULL) {
+      metacoder::heat_tree(..., make_node_legend = FALSE, make_edge_legend = FALSE, output_file = NULL)
     }
   )
   
@@ -75,9 +78,11 @@ heat_tree_matrix <- function(obj, dataset, label_small_trees =  FALSE,
                       function(index) {
                         set.seed(seed)
                         obj %>%
-                          taxa::filter_obs("diff_table",
-                                           obj$data$diff_table$treatment_1 == treatments[combinations[index, 1]] &
-                                             obj$data$diff_table$treatment_2 == treatments[combinations[index, 2]]) %>%
+                          taxa::filter_obs(dataset,
+                                           (diff_table$treatment_1 == treatments[combinations[index, 1]] &
+                                             diff_table$treatment_2 == treatments[combinations[index, 2]]) |
+                                             (diff_table$treatment_1 == treatments[combinations[index, 2]] &
+                                                diff_table$treatment_2 == treatments[combinations[index, 1]])) %>%
                           plot_sub_plot(...)
                       })
   
@@ -133,7 +138,8 @@ heat_tree_matrix <- function(obj, dataset, label_small_trees =  FALSE,
     cowplot::draw_text(gsub("_", " ", vert_label_data$treatment_1), 
                        x = vert_label_data$label_x, y = vert_label_data$label_y, 
                        size = label_size, colour = diverging_palette()[3],
-                       hjust = "center", vjust = "bottom", angle = -90)
+                       hjust = "center", vjust = "bottom", angle = -90) +
+    ggplot2::theme(aspect.ratio = 1)
   for (i in seq_along(sub_plots)) {
     matrix_plot <- matrix_plot + cowplot::draw_plot(sub_plots[[i]], 
                                                     x = matrix_data[i, "x"],
@@ -141,6 +147,14 @@ heat_tree_matrix <- function(obj, dataset, label_small_trees =  FALSE,
                                                     width = subgraph_width,
                                                     height = subgraph_height)
   }
+  
+  # Save plot
+  if (!is.null(output_file)) {
+    for (path in output_file) {
+      ggplot2::ggsave(path, matrix_plot, bg = "transparent", width = 10, height = 10)
+    }
+  }
+  
   
   return(matrix_plot)
 }

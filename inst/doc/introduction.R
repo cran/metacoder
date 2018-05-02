@@ -17,7 +17,6 @@ obj <- parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
                       class_key = c(tax_rank = "info", tax_name = "taxon_name"),
                       class_regex = "^(.+)__(.+)$")
 
-
 ## ---------------------------------------------------------------------------------------
 print(obj)
 
@@ -73,6 +72,7 @@ heat_tree(obj,
           node_size = n_obs,
           node_color = log2_median_ratio, 
           node_color_interval = c(-2, 2),
+          edge_color_interval = c(-2, 2),
           node_color_range = c("cyan", "gray", "tan"),
           node_size_axis_label = "OTU count",
           node_color_axis_label = "Log 2 ratio of median proportions")

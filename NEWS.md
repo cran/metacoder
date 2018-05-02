@@ -1,5 +1,23 @@
 # News 
 
+##  metacoder 0.2.1
+
+### Bug fixes
+
+* Fixes numerous bugs in `heat_tree_matrix` that happen when the input data is not exactly like that produced by `compare_groups` (issues [#195](https://github.com/grunwaldlab/metacoder/issues/195), [#196](https://github.com/grunwaldlab/metacoder/issues/196), [#197](https://github.com/grunwaldlab/metacoder/issues/197)). 
+* Fixed how `output_file` was used with `heat_tree_matrix`. Now whole plot is saved instead of last subplot.  (issue [#203](https://github.com/grunwaldlab/metacoder/issues/203))
+* Fixed "unused argument" bug in `parse_mothur_tax_summary` when reading from a file path (issue [#211](https://github.com/grunwaldlab/metacoder/issues/211)).
+* Fixed bug when in `zero_low_counts` when using `use_total = TRUE` (issue [#227](https://github.com/grunwaldlab/metacoder/issues/227)).
+* Numerous other small fixes.
+* Fixed `parse_phyloseq` error when arbitrary rank names were used.
+
+
+### Improvements
+
+* Node and edge legends can now be excluded individually (Thanks [\@grabear](https://github.com/grabear)!) (issue [#202](https://github.com/grunwaldlab/metacoder/issues/202)).
+* The output of `heat_tree_matrix` always has a 1:1 aspect ratio. (issue [#205](https://github.com/grunwaldlab/metacoder/issues/205))
+* Numerous calculation functions added, with more consistent behavior.
+
 ## metacoder 0.2.0
 
 ### Bug fixes

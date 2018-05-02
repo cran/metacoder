@@ -37,12 +37,13 @@ heat_tree(...)
   TRUE, finite = TRUE), edge_color_interval = NULL, node_label_max = 500,
   edge_label_max = 500, tree_label_max = 500, overlap_avoidance = 1,
   margin_size = c(0, 0, 0, 0), layout = "reingold-tilford",
-  initial_layout = "fruchterman-reingold", make_legend = TRUE,
-  title = NULL, title_size = 0.08, node_color_axis_label = NULL,
-  node_size_axis_label = NULL, edge_color_axis_label = NULL,
-  edge_size_axis_label = NULL, background_color = "#FFFFFF00",
-  output_file = NULL, aspect_ratio = 1, repel_labels = TRUE,
-  repel_force = 1, repel_iter = 1000, verbose = FALSE, ...)
+  initial_layout = "fruchterman-reingold", make_node_legend = TRUE,
+  make_edge_legend = TRUE, title = NULL, title_size = 0.08,
+  node_color_axis_label = NULL, node_size_axis_label = NULL,
+  edge_color_axis_label = NULL, edge_size_axis_label = NULL,
+  background_color = "#FFFFFF00", output_file = NULL, aspect_ratio = 1,
+  repel_labels = TRUE, repel_force = 1, repel_iter = 1000,
+  verbose = FALSE, ...)
 }
 \arguments{
 \item{...}{(other named arguments)
@@ -205,7 +206,9 @@ of nodes, passed as input to the \code{layout} algorithm.
 See details on layouts.
 Default: Not used.}
 
-\item{make_legend}{if TRUE...}
+\item{make_node_legend}{if TRUE, make legend for node size/color mappings.}
+
+\item{make_edge_legend}{if TRUE, make legend for edge size/color mappings.}
 
 \item{title}{Name to print above the graph.}
 
@@ -241,43 +244,18 @@ Default: Do not save plot.}
 \item{verbose}{If \code{TRUE} print progress reports as the function runs.}
 }
 \description{
-Plots the distribution of values associated with a taxonomic classification.
+Plots the distribution of values associated with a taxonomic classification/heirarchy.
 Taxonomic classifications can have multiple roots, resulting in multiple trees on the same plot.
-Sizes and colors of nodes, edges, labels, and individual trees can be displayed relative to
-numbers (e.g. taxon statistics, such as abundance).
-The displayed range of colors and sizes can be explicitly defined or automatically generated.
-Various transformations can be applied to numbers sizes/colors are mapped to.
-Several types of tree layout algorithms from \code{\link{igraph}} can be used.
+A tree consists of elements, element protperties, conditions, and mapping properties which are
+represented as parameters in the heat_tree object.
+The elements (e.g. nodes, edges, lables, and individual trees) are the infrastructure of the heat tree.
+The element properties (e.g. size and color) are characteristics that are manipulated by various 
+data conditions and mapping properties.  The element properties can be explicitly defined or automatically generated.
+The conditions are data (e.g. taxon statistics, such as abundance) represented in the taxmap/metacoder object.
+The mapping properties are parameters (e.g. transformations, range, interval, and layout) used to change the 
+elements/element properties and how they are used to represent (or not represent) the various conditions.
 }
-\section{size}{
-
-
-
-The size of nodes, edges, labels, and trees can be mapped to arbitrary numbers.
-This is useful for displaying statistics for taxa, such as abundance.
-Only the relative size of numbers is used, not the values themselves.
-They can be transformed to make the mapping non-linear using the transformation options.
-The range of actual sizes displayed on the graph can be set using the range options.
-
-Accepts a \code{numeric} vector, the same length \code{taxon_id} or a
-factor of its length.
-}
-
-\section{colors}{
-
-
-The colors of nodes, edges, labels, and trees can be mapped to arbitrary numbers.
-This is useful for highlighting groups of taxa.
-Only the relative size of numbers is used, not the values themselves.
-They can be transformed to make the mapping non-linear using the transformation options.
-The range of actual colors displayed on the graph can be set using the range options.
-
-Accepts a vector, the same length \code{taxon_id} or a factor of its length.
-If a numeric vector is given, it is mapped to a color scale.
-Hex values or color names can be used (e.g. \code{#000000} or \code{"black"}).
-}
-
-\section{Labels}{
+\section{labels}{
 
 
 The labels of nodes, edges, and trees can be added.
@@ -288,11 +266,46 @@ Tree labels are displayed over their tree.
 Accepts a vector, the same length \code{taxon_id} or a factor of its length.
 }
 
-\section{Transformations}{
+\section{sizes}{
 
 
-Before any numbers specified are mapped to color/size, they can be transformed to make
-the mapping non-linear. 
+The size of nodes, edges, labels, and trees can be mapped to various conditions.
+This is useful for displaying statistics for taxa, such as abundance.
+Only the relative size of the condition is used, not the values themselves.
+The <element>_size_trans (transformation) parameter can be used to make the size mapping non-linear.
+The <element>_size_range parameter can be used to proportionately change the size of an
+element based on the condition mapped to that element.
+The <element>_size_interval parameter can be used to change the limit at which a condition
+will be graphically represented as the same size as the minimum/maximum <element>_size_range.
+
+Accepts a \code{numeric} vector, the same length \code{taxon_id} or a
+factor of its length.
+}
+
+\section{colors}{
+
+
+The colors of nodes, edges, labels, and trees can be mapped to various conditions.
+This is useful for visually highlighting/clustering groups of taxa.
+Only the relative size of the condition is used, not the values themselves.
+The <element>_color_trans (transformation) parameter can be used to make the color mapping non-linear.
+The <element>_color_range parameter can be used to proportionately change the color of an
+element based on the condition mapped to that element.
+The <element>_color_interval parameter can be used to change the limit at which a condition
+will be graphically represented as the same color as the minimum/maximum <element>_color_range.
+
+Accepts a vector, the same length \code{taxon_id} or a factor of its length.
+If a numeric vector is given, it is mapped to a color scale.
+Hex values or color names can be used (e.g. \code{#000000} or \code{"black"}).
+
+Mapping Properties
+}
+
+\section{transformations}{
+
+
+Before any conditions specified are mapped to an element property (color/size), they 
+can be transformed to make the mapping non-linear. 
 Any of the transformations listed below can be used by specifying their name.
 A customized function can also be supplied to do the transformation.
 
@@ -308,10 +321,11 @@ A customized function can also be supplied to do the transformation.
 }
 }
 
-\section{Ranges}{
+\section{ranges}{
 
 
 The displayed range of colors and sizes can be explicitly defined or automatically generated.
+When explicitely used, the size range will proportionately increase/decrease the size of a particular element.
 Size ranges are specified by supplying a \code{numeric} vector with two values: the minimum and maximum.
 The units used should be between 0 and 1, representing the proportion of a dimension of the graph.
 Since the dimensions of the graph are determined by layout, and not always square, the value
@@ -321,11 +335,11 @@ Color ranges can be any number of color values as either HEX codes (e.g. \code{#
 color names (e.g. \code{"black"}).
 }
 
-\section{Layout}{
+\section{layout}{
 
 
-Layouts determine the position of nodes on the graph.
-The are implemented using the \code{\link{igraph}} package.
+Layouts determine the position of node elements on the graph.
+They are implemented using the \code{\link{igraph}} package.
 Any additional arguments passed to \code{heat_tree} are passed to the  \code{\link{igraph}}
 function used.
 The following \code{character} values are understood:
@@ -344,16 +358,20 @@ The following \code{character} values are understood:
 }
 }
 
-\section{Intervals}{
+\section{intervals}{
 
 
 This is the minimum and maximum of values displayed on the legend scales.
 Intervals are specified by supplying a \code{numeric} vector with two values: the minimum and maximum.
-These are defined in the same units as element size/color.
-By default, the minimum and maximum equals the range of the values used to infer size/color.
-Setting a custom interval is useful for making size/color in multiple graphs correspond to the same statistics,
+When explicitely used, the <element>_<property>_interval will redefine the way the actual conditional values are being represented
+by setting a limit for the <element>_<property>.
+Any condition below the minimum <element>_<property>_interval will be graphically represented the same as a condition AT the
+minimum value in the full range of conditional values.  Any value above the maximum <element>_<property>_interval will be graphically 
+represented the same as a value AT the maximum value in the full range of conditional values.
+By default, the minimum and maximum equals the <element>_<property>_range used to infer the value of the <element>_<property>.
+Setting a custom interval is useful for making <element>_<properties> in multiple graphs correspond to the same conditions,
 or setting logical boundaries (such as \code{c(0,1)} for proportions.
-Note that this is different from the "range" options, which determine the range of graphed sizes/colors.
+Note that this is different from the <element>_<property>_range mapping property, which determines the size/color of graphed elements.
 }
 
 \section{Acknowledgements}{
@@ -394,7 +412,7 @@ heat_tree(x, node_label = taxon_names, node_size = total, node_color = total)
 #  You can plot up to 4 quantative variables use node/edge size/color, but it
 #  is usually best to use 2 or 3. The plot below uses node size for number of
 #  OTUs and color for number of reads and edge size for number of samples
-x$data$taxon_counts <- calc_n_samples(x, dataset = "taxon_counts", append = TRUE)
+x$data$n_samples <- calc_n_samples(x, dataset = "taxon_counts")
 heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = total,
           edge_color = n_samples)
 
@@ -450,4 +468,3 @@ heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = n_obs,
 
 }
 }
-\keyword{internal}
