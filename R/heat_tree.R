@@ -24,6 +24,14 @@ heat_tree.Taxmap <- function(.input, ...) {
   arguments <- c(list(taxon_id = .input$edge_list$to, supertaxon_id = .input$edge_list$from),
                  lazyeval::lazy_eval(lazyeval::lazy_dots(...), data = data))
   
+  # Check for common mistakes
+  # func_not_vars <- c("taxon_name", "taxon_rank")
+  invalid_input <- vapply(arguments, is.function, logical(1))
+  if (any(invalid_input)) {
+    stop(paste0("Function given to parameter '", names(invalid_input)[invalid_input][1], "'",
+                " Did you use taxon_name/taxon_rank instead of taxon_names/taxon_ranks perhaps?"))
+  }
+  
   # Use variable name for scale axis labels
   if (! "node_color_axis_label" %in% names(arguments)) {
     arguments$node_color_axis_label <- deparse(as.list(match.call())$node_color)
@@ -49,7 +57,7 @@ heat_tree.Taxmap <- function(.input, ...) {
 #' 
 #' Plots the distribution of values associated with a taxonomic classification/heirarchy.
 #' Taxonomic classifications can have multiple roots, resulting in multiple trees on the same plot.
-#' A tree consists of elements, element protperties, conditions, and mapping properties which are
+#' A tree consists of elements, element properties, conditions, and mapping properties which are
 #' represented as parameters in the heat_tree object.
 #' The elements (e.g. nodes, edges, lables, and individual trees) are the infrastructure of the heat tree.
 #' The element properties (e.g. size and color) are characteristics that are manipulated by various 
@@ -131,7 +139,7 @@ heat_tree.Taxmap <- function(.input, ...) {
 #' Default: \code{"area"}.
 #' 
 #' @param node_size_range See details on ranges.
-#' Defualt: Optimize to balance overlaps and range size.
+#' Default: Optimize to balance overlaps and range size.
 #' @param edge_size_range See details on ranges.
 #' Default: relative to node size range. 
 # #' @param tree_size_range See details on ranges.
@@ -212,7 +220,7 @@ heat_tree.Taxmap <- function(.input, ...) {
 #' Default: Do not save plot.
 #' 
 #' @param aspect_ratio The aspect_ratio of the plot.
-#' @param repel_labels If \code{TRUE} (Defualt), use the ggrepel package to spread out labels.
+#' @param repel_labels If \code{TRUE} (Default), use the ggrepel package to spread out labels.
 #' @param repel_force The force of which overlapping labels will be repelled from eachother. 
 #' @param repel_iter The number of iterations used when repelling labels
 #' @param verbose If \code{TRUE} print progress reports as the function runs.
@@ -282,7 +290,7 @@ heat_tree.Taxmap <- function(.input, ...) {
 #' @section ranges:
 #' 
 #' The displayed range of colors and sizes can be explicitly defined or automatically generated.
-#' When explicitely used, the size range will proportionately increase/decrease the size of a particular element.
+#' When explicitly used, the size range will proportionately increase/decrease the size of a particular element.
 #' Size ranges are specified by supplying a \code{numeric} vector with two values: the minimum and maximum.
 #' The units used should be between 0 and 1, representing the proportion of a dimension of the graph.
 #' Since the dimensions of the graph are determined by layout, and not always square, the value
@@ -317,7 +325,7 @@ heat_tree.Taxmap <- function(.input, ...) {
 #' 
 #' This is the minimum and maximum of values displayed on the legend scales.
 #' Intervals are specified by supplying a \code{numeric} vector with two values: the minimum and maximum.
-#' When explicitely used, the <element>_<property>_interval will redefine the way the actual conditional values are being represented
+#' When explicitly used, the <element>_<property>_interval will redefine the way the actual conditional values are being represented
 #' by setting a limit for the <element>_<property>.
 #' Any condition below the minimum <element>_<property>_interval will be graphically represented the same as a condition AT the
 #' minimum value in the full range of conditional values.  Any value above the maximum <element>_<property>_interval will be graphically 
@@ -355,7 +363,7 @@ heat_tree.Taxmap <- function(.input, ...) {
 #' # Plotting read depth:
 #' #  To plot read depth, you first need to add up the number of reads per taxon.
 #' #  The function `calc_taxon_abund` is good for this. 
-#' x$data$taxon_counts <- calc_taxon_abund(x, dataset = "tax_data")
+#' x$data$taxon_counts <- calc_taxon_abund(x, data = "tax_data")
 #' x$data$taxon_counts$total <- rowSums(x$data$taxon_counts[, -1]) # -1 = taxon_id column
 #' heat_tree(x, node_label = taxon_names, node_size = total, node_color = total)
 #' 
@@ -363,7 +371,7 @@ heat_tree.Taxmap <- function(.input, ...) {
 #' #  You can plot up to 4 quantative variables use node/edge size/color, but it
 #' #  is usually best to use 2 or 3. The plot below uses node size for number of
 #' #  OTUs and color for number of reads and edge size for number of samples
-#' x$data$n_samples <- calc_n_samples(x, dataset = "taxon_counts")
+#' x$data$n_samples <- calc_n_samples(x, data = "taxon_counts")
 #' heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = total,
 #'           edge_color = n_samples)
 #' 
@@ -764,7 +772,7 @@ heat_tree.default <- function(taxon_id, supertaxon_id,
       # Use genetic algorithm to pick range
       ga_result <- GA::ga(type = "real-valued", 
                           fitness =  function(x) optimality_stat(x[1], x[2]),
-                          min = c(min_range[1], max_range[1]), max = c(min_range[2], max_range[2]),
+                          lower = c(min_range[1], max_range[1]), upper = c(min_range[2], max_range[2]),
                           maxiter = 40, run = 30, popSize = 70, monitor = FALSE, parallel = FALSE)
       vsr_plot <- as.vector(ga_result@solution[1, ])
     }

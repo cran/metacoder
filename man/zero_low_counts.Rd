@@ -4,13 +4,14 @@
 \alias{zero_low_counts}
 \title{Replace low counts with zero}
 \usage{
-zero_low_counts(obj, dataset, min_count = 2, use_total = FALSE,
-  cols = NULL, other_cols = FALSE, out_names = NULL)
+zero_low_counts(obj, data, min_count = 2, use_total = FALSE,
+  cols = NULL, other_cols = FALSE, out_names = NULL,
+  dataset = NULL)
 }
 \arguments{
 \item{obj}{A \code{\link[taxa]{taxmap}} object}
 
-\item{dataset}{The name of a table in \code{obj$data}.}
+\item{data}{The name of a table in \code{obj$data}.}
 
 \item{min_count}{The minimum number of counts needed for a count to remain
 unchanged. Any could less than this will be converted to a zero. For
@@ -22,7 +23,7 @@ in the table. For example \code{use_total = TRUE, min_count = 10} would
 convert all counts of any row to zero if the total for all counts in that
 row was less than 10.}
 
-\item{cols}{The columns in \code{dataset} to use. By
+\item{cols}{The columns in \code{data} to use. By
 default, all numeric columns are used. Takes one of the following inputs:
 \describe{
 \item{TRUE/FALSE:}{All/No columns will used.}
@@ -42,6 +43,8 @@ will be preserved in the front. Takes one of the following inputs:
 
 \item{out_names}{The names of count columns in the output. Must be the same
 length as \code{cols} (or \code{unique(groups)}, if \code{groups} is used).}
+
+\item{dataset}{DEPRECIATED. use "data" instead.}
 }
 \value{
 A tibble
@@ -53,7 +56,7 @@ below a minimum number to zero. This is useful for effectively removing
 }
 \examples{
 \dontrun{
-# Parse dataset for examples
+# Parse data for examples
 x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
                    class_regex = "^(.+)__(.+)$")
@@ -86,6 +89,10 @@ Other calculations: \code{\link{calc_group_mean}},
   \code{\link{calc_group_stat}},
   \code{\link{calc_n_samples}},
   \code{\link{calc_obs_props}},
+  \code{\link{calc_prop_samples}},
   \code{\link{calc_taxon_abund}},
-  \code{\link{compare_groups}}, \code{\link{rarefy_obs}}
+  \code{\link{compare_groups}},
+  \code{\link{counts_to_presence}},
+  \code{\link{rarefy_obs}}
 }
+\concept{calculations}

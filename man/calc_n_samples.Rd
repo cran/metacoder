@@ -4,15 +4,16 @@
 \alias{calc_n_samples}
 \title{Count the number of samples}
 \usage{
-calc_n_samples(obj, dataset, cols = NULL, groups = "n_samples",
-  other_cols = FALSE, out_names = NULL, drop = FALSE)
+calc_n_samples(obj, data, cols = NULL, groups = "n_samples",
+  other_cols = FALSE, out_names = NULL, drop = FALSE,
+  more_than = 0, dataset = NULL)
 }
 \arguments{
 \item{obj}{A \code{\link[taxa]{taxmap}} object}
 
-\item{dataset}{The name of a table in \code{obj$data}.}
+\item{data}{The name of a table in \code{obj$data}.}
 
-\item{cols}{The columns in \code{dataset} to use. By
+\item{cols}{The columns in \code{data} to use. By
 default, all numeric columns are used. Takes one of the following inputs:
 \describe{
 \item{TRUE/FALSE:}{All/No columns will used.}
@@ -40,41 +41,48 @@ length as \code{cols} (or \code{unique(groups)}, if \code{groups} is used).}
 
 \item{drop}{If \code{groups} is not used, return a vector of the results instead
 of a table with one column.}
+
+\item{more_than}{A sample must have greater than this value for it to be counted as present.}
+
+\item{dataset}{DEPRECIATED. use "data" instead.}
 }
 \value{
 A tibble
 }
 \description{
 For a given table in a \code{\link[taxa]{taxmap}} object, count the number of
-samples with greater than zero occurrences.
+samples (i.e. columns) with greater than a minimum value.
 }
 \examples{
 \dontrun{
-# Parse dataset for example
+# Parse data for example
 x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
                    class_regex = "^(.+)__(.+)$")
                    
-# Count samples with reads
-calc_n_samples(x, dataset = "tax_data")
+# Count samples with at least one read
+calc_n_samples(x, data = "tax_data")
+
+# Count samples with at least 5 reads
+calc_n_samples(x, data = "tax_data", more_than = 5)
 
 # Return a vector instead of a table
-calc_n_samples(x, dataset = "tax_data", drop = TRUE)
+calc_n_samples(x, data = "tax_data", drop = TRUE)
 
 # Only use some columns
-calc_n_samples(x, dataset = "tax_data", cols = hmp_samples$sample_id[1:5])
+calc_n_samples(x, data = "tax_data", cols = hmp_samples$sample_id[1:5])
 
 # Return a count for each treatment
-calc_n_samples(x, dataset = "tax_data", groups = hmp_samples$body_site)
+calc_n_samples(x, data = "tax_data", groups = hmp_samples$body_site)
 
 # Rename output columns 
-calc_n_samples(x, dataset = "tax_data", groups = hmp_samples$body_site,
+calc_n_samples(x, data = "tax_data", groups = hmp_samples$body_site,
                out_names = c("A", "B", "C", "D", "E"))
 
 # Preserve other columns from input
-calc_n_samples(x, dataset = "tax_data", other_cols = TRUE)
-calc_n_samples(x, dataset = "tax_data", other_cols = 2)
-calc_n_samples(x, dataset = "tax_data", other_cols = "otu_id")
+calc_n_samples(x, data = "tax_data", other_cols = TRUE)
+calc_n_samples(x, data = "tax_data", other_cols = 2)
+calc_n_samples(x, data = "tax_data", other_cols = "otu_id")
 }
 
 }
@@ -84,7 +92,10 @@ Other calculations: \code{\link{calc_group_mean}},
   \code{\link{calc_group_rsd}},
   \code{\link{calc_group_stat}},
   \code{\link{calc_obs_props}},
+  \code{\link{calc_prop_samples}},
   \code{\link{calc_taxon_abund}},
-  \code{\link{compare_groups}}, \code{\link{rarefy_obs}},
-  \code{\link{zero_low_counts}}
+  \code{\link{compare_groups}},
+  \code{\link{counts_to_presence}},
+  \code{\link{rarefy_obs}}, \code{\link{zero_low_counts}}
 }
+\concept{calculations}

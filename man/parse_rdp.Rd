@@ -27,7 +27,7 @@ parse_rdp(input = NULL, file = NULL, include_seqs = TRUE,
 sequences in the output object.}
 
 \item{add_species}{(\code{logical} of length 1) If \code{TRUE}, add the
-species information to the taxonomy. In this databse, the species name
+species information to the taxonomy. In this database, the species name
 often contains other information as well.}
 }
 \value{
@@ -47,12 +47,15 @@ tctggagaagcgacatccgcgctggaccgtgtacaagtctcttggaaaagagcgtcgtagagggtgacaatcccgtcttt
 }
 }
 \seealso{
-Other parsers: \code{\link{parse_greengenes}},
+Other parsers: \code{\link{parse_edge_list}},
+  \code{\link{parse_greengenes}},
   \code{\link{parse_mothur_tax_summary}},
   \code{\link{parse_mothur_taxonomy}},
   \code{\link{parse_newick}}, \code{\link{parse_phyloseq}},
   \code{\link{parse_phylo}},
   \code{\link{parse_qiime_biom}},
   \code{\link{parse_silva_fasta}},
+  \code{\link{parse_ubiome}},
   \code{\link{parse_unite_general}}
 }
+\concept{parsers}

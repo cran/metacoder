@@ -19,13 +19,13 @@ heat_tree(...)
   tree_label_color = "#000000", node_size_trans = "area",
   edge_size_trans = node_size_trans,
   node_label_size_trans = node_size_trans,
-  edge_label_size_trans = edge_size_trans, tree_label_size_trans = "area",
-  node_color_trans = "area", edge_color_trans = node_color_trans,
-  tree_color_trans = "area", node_label_color_trans = "area",
-  edge_label_color_trans = "area", tree_label_color_trans = "area",
-  node_size_range = c(NA, NA), edge_size_range = c(NA, NA),
-  node_label_size_range = c(NA, NA), edge_label_size_range = c(NA, NA),
-  tree_label_size_range = c(NA, NA),
+  edge_label_size_trans = edge_size_trans,
+  tree_label_size_trans = "area", node_color_trans = "area",
+  edge_color_trans = node_color_trans, tree_color_trans = "area",
+  node_label_color_trans = "area", edge_label_color_trans = "area",
+  tree_label_color_trans = "area", node_size_range = c(NA, NA),
+  edge_size_range = c(NA, NA), node_label_size_range = c(NA, NA),
+  edge_label_size_range = c(NA, NA), tree_label_size_range = c(NA, NA),
   node_color_range = quantative_palette(),
   edge_color_range = node_color_range,
   tree_color_range = quantative_palette(),
@@ -33,17 +33,17 @@ heat_tree(...)
   edge_label_color_range = quantative_palette(),
   tree_label_color_range = quantative_palette(),
   node_size_interval = range(node_size, na.rm = TRUE, finite = TRUE),
-  node_color_interval = NULL, edge_size_interval = range(edge_size, na.rm =
-  TRUE, finite = TRUE), edge_color_interval = NULL, node_label_max = 500,
-  edge_label_max = 500, tree_label_max = 500, overlap_avoidance = 1,
-  margin_size = c(0, 0, 0, 0), layout = "reingold-tilford",
-  initial_layout = "fruchterman-reingold", make_node_legend = TRUE,
-  make_edge_legend = TRUE, title = NULL, title_size = 0.08,
-  node_color_axis_label = NULL, node_size_axis_label = NULL,
-  edge_color_axis_label = NULL, edge_size_axis_label = NULL,
-  background_color = "#FFFFFF00", output_file = NULL, aspect_ratio = 1,
-  repel_labels = TRUE, repel_force = 1, repel_iter = 1000,
-  verbose = FALSE, ...)
+  node_color_interval = NULL, edge_size_interval = range(edge_size,
+  na.rm = TRUE, finite = TRUE), edge_color_interval = NULL,
+  node_label_max = 500, edge_label_max = 500, tree_label_max = 500,
+  overlap_avoidance = 1, margin_size = c(0, 0, 0, 0),
+  layout = "reingold-tilford", initial_layout = "fruchterman-reingold",
+  make_node_legend = TRUE, make_edge_legend = TRUE, title = NULL,
+  title_size = 0.08, node_color_axis_label = NULL,
+  node_size_axis_label = NULL, edge_color_axis_label = NULL,
+  edge_size_axis_label = NULL, background_color = "#FFFFFF00",
+  output_file = NULL, aspect_ratio = 1, repel_labels = TRUE,
+  repel_force = 1, repel_iter = 1000, verbose = FALSE, ...)
 }
 \arguments{
 \item{...}{(other named arguments)
@@ -135,7 +135,7 @@ Default: \code{"area"}.}
 Default: \code{"area"}.}
 
 \item{node_size_range}{See details on ranges.
-Defualt: Optimize to balance overlaps and range size.}
+Default: Optimize to balance overlaps and range size.}
 
 \item{edge_size_range}{See details on ranges.
 Default: relative to node size range.}
@@ -235,7 +235,7 @@ Default: Do not save plot.}
 
 \item{aspect_ratio}{The aspect_ratio of the plot.}
 
-\item{repel_labels}{If \code{TRUE} (Defualt), use the ggrepel package to spread out labels.}
+\item{repel_labels}{If \code{TRUE} (Default), use the ggrepel package to spread out labels.}
 
 \item{repel_force}{The force of which overlapping labels will be repelled from eachother.}
 
@@ -246,7 +246,7 @@ Default: Do not save plot.}
 \description{
 Plots the distribution of values associated with a taxonomic classification/heirarchy.
 Taxonomic classifications can have multiple roots, resulting in multiple trees on the same plot.
-A tree consists of elements, element protperties, conditions, and mapping properties which are
+A tree consists of elements, element properties, conditions, and mapping properties which are
 represented as parameters in the heat_tree object.
 The elements (e.g. nodes, edges, lables, and individual trees) are the infrastructure of the heat tree.
 The element properties (e.g. size and color) are characteristics that are manipulated by various 
@@ -325,7 +325,7 @@ A customized function can also be supplied to do the transformation.
 
 
 The displayed range of colors and sizes can be explicitly defined or automatically generated.
-When explicitely used, the size range will proportionately increase/decrease the size of a particular element.
+When explicitly used, the size range will proportionately increase/decrease the size of a particular element.
 Size ranges are specified by supplying a \code{numeric} vector with two values: the minimum and maximum.
 The units used should be between 0 and 1, representing the proportion of a dimension of the graph.
 Since the dimensions of the graph are determined by layout, and not always square, the value
@@ -363,7 +363,7 @@ The following \code{character} values are understood:
 
 This is the minimum and maximum of values displayed on the legend scales.
 Intervals are specified by supplying a \code{numeric} vector with two values: the minimum and maximum.
-When explicitely used, the <element>_<property>_interval will redefine the way the actual conditional values are being represented
+When explicitly used, the <element>_<property>_interval will redefine the way the actual conditional values are being represented
 by setting a limit for the <element>_<property>.
 Any condition below the minimum <element>_<property>_interval will be graphically represented the same as a condition AT the
 minimum value in the full range of conditional values.  Any value above the maximum <element>_<property>_interval will be graphically 
@@ -404,7 +404,7 @@ heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = n_obs)
 # Plotting read depth:
 #  To plot read depth, you first need to add up the number of reads per taxon.
 #  The function `calc_taxon_abund` is good for this. 
-x$data$taxon_counts <- calc_taxon_abund(x, dataset = "tax_data")
+x$data$taxon_counts <- calc_taxon_abund(x, data = "tax_data")
 x$data$taxon_counts$total <- rowSums(x$data$taxon_counts[, -1]) # -1 = taxon_id column
 heat_tree(x, node_label = taxon_names, node_size = total, node_color = total)
 
@@ -412,7 +412,7 @@ heat_tree(x, node_label = taxon_names, node_size = total, node_color = total)
 #  You can plot up to 4 quantative variables use node/edge size/color, but it
 #  is usually best to use 2 or 3. The plot below uses node size for number of
 #  OTUs and color for number of reads and edge size for number of samples
-x$data$n_samples <- calc_n_samples(x, dataset = "taxon_counts")
+x$data$n_samples <- calc_n_samples(x, data = "taxon_counts")
 heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = total,
           edge_color = n_samples)
 

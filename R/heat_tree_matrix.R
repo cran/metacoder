@@ -1,11 +1,11 @@
 #' Plot a matrix of heat trees
 #' 
-#' Plot a matrix of heat trees for showing parwise comparisons. A larger,
+#' Plot a matrix of heat trees for showing pairwise comparisons. A larger,
 #' labelled tree serves as a key for the matrix of smaller unlabelled trees. The
 #' data for this function is typically created with \code{\link{compare_groups}},
 #' 
 #' @param obj A \code{\link[taxa]{taxmap}} object
-#' @param dataset The name of a table in \code{obj$data} that is the output of 
+#' @param data The name of a table in \code{obj$data} that is the output of 
 #'   \code{\link{compare_groups}} or in the same format.
 #' @param label_small_trees If \code{TRUE} add labels to small trees as well as 
 #'   the key tree. Otherwise, only the key tree will be labeled.
@@ -16,6 +16,7 @@
 #' The type of the file will be determined by the extension given.
 #' Default: Do not save plot.
 #' @param ... Passed to \code{\link{heat_tree}}. Some options will be overwritten.
+#' @param dataset DEPRECIATED. use "data" instead.
 #' 
 #' @examples
 #' \dontrun{
@@ -25,19 +26,19 @@
 #'                     class_regex = "^(.+)__(.+)$")
 #' 
 #' # Convert counts to proportions
-#' x$data$otu_table <- calc_obs_props(x, dataset = "tax_data", cols = hmp_samples$sample_id)
+#' x$data$otu_table <- calc_obs_props(x, data = "tax_data", cols = hmp_samples$sample_id)
 #' 
 #' # Get per-taxon counts
-#' x$data$tax_table <- calc_taxon_abund(x, dataset = "otu_table", cols = hmp_samples$sample_id)
+#' x$data$tax_table <- calc_taxon_abund(x, data = "otu_table", cols = hmp_samples$sample_id)
 #' 
 #' # Calculate difference between treatments
-#' x$data$diff_table <- compare_groups(x, dataset = "tax_table",
+#' x$data$diff_table <- compare_groups(x, data = "tax_table",
 #'                                     cols = hmp_samples$sample_id,
 #'                                     groups = hmp_samples$body_site)
 #'
 #' # Plot results (might take a few minutes)
 #' heat_tree_matrix(x,
-#'                  dataset = "diff_table",
+#'                  data = "diff_table",
 #'                  node_size = n_obs,
 #'                  node_label = taxon_names,
 #'                  node_color = log2_median_ratio,
@@ -51,13 +52,24 @@
 #' }
 #' 
 #' @export
-heat_tree_matrix <- function(obj, dataset, label_small_trees =  FALSE,
-                             key_size = 0.6, seed = 1, output_file = NULL, ...) {
+heat_tree_matrix <- function(obj, data, label_small_trees =  FALSE,
+                             key_size = 0.6, seed = 1, output_file = NULL,
+                             ..., dataset = NULL) {
+  
+  # Check for use of "dataset"
+  if (! is.null(dataset)) {
+    warning(call. = FALSE,
+            'Use of "dataset" is depreciated. Use "data" instead.')
+    data <- dataset
+  }
+  
   # Get plot data table 
-  diff_table <- get_taxmap_table(obj, dataset)
+  diff_table <- get_taxmap_table(obj, data)
   
   # Make plot layout
-  treatments <- unique(c(diff_table$treatment_1, diff_table$treatment_2))
+  treat_1 <- as.character(diff_table$treatment_1)
+  treat_2 <- as.character(diff_table$treatment_2)
+  treatments <- unique(c(treat_1, treat_2))
   combinations <- t(utils::combn(seq_along(treatments), 2))
   layout_matrix <- matrix(rep(NA, (length(treatments))^2), nrow = length(treatments))
   for (index in 1:nrow(combinations)) {
@@ -78,11 +90,11 @@ heat_tree_matrix <- function(obj, dataset, label_small_trees =  FALSE,
                       function(index) {
                         set.seed(seed)
                         obj %>%
-                          taxa::filter_obs(dataset,
-                                           (diff_table$treatment_1 == treatments[combinations[index, 1]] &
-                                             diff_table$treatment_2 == treatments[combinations[index, 2]]) |
-                                             (diff_table$treatment_1 == treatments[combinations[index, 2]] &
-                                                diff_table$treatment_2 == treatments[combinations[index, 1]])) %>%
+                          taxa::filter_obs(data,
+                                           (treat_1 == treatments[combinations[index, 1]] &
+                                              treat_2 == treatments[combinations[index, 2]]) |
+                                             (treat_1 == treatments[combinations[index, 2]] &
+                                                treat_2 == treatments[combinations[index, 1]])) %>%
                           plot_sub_plot(...)
                       })
   

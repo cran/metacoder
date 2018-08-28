@@ -75,15 +75,13 @@ test_that("Mothur classify.seqs *.tax.summary  detailed parsing", {
 7	0.1.2.3.7.2.5.1	unclassified	1	2	0	2	0	
 8	0.1.2.3.7.2.5.1.1	unclassified	1	2	0	2	0	
 9	0.1.2.3.7.2.5.1.1.1	unclassified	1	2	0	2	0"  
-  expect_warning(result <- parse_mothur_tax_summary(text = raw_data))
-  expect_warning(result_from_file <- parse_mothur_tax_summary(file = "example_data/mothur_summary.txt"))
+  result <- parse_mothur_tax_summary(text = raw_data)
+  result_from_file <- parse_mothur_tax_summary(file = "example_data/mothur_summary.txt")
   
   expect_equal(result, result_from_file)
   expect_equal(length(result$taxa), 17)
   expect_equal(length(roots(result)), 1)
   expect_true(all(c("Bacteria", "Actinobacteria") %in% result$taxon_names()))
-  
-  
 })
 
 
@@ -94,7 +92,7 @@ test_that("Mothur classify.seqs *.tax.summary simple parsing", {
 "k__Bacteria";"p__Actinobacteria";"c__Actinobacteria";"o__Bifidobacteriales";"f__Bifidobacteriaceae";"g__Bifidobacterium";"s__adolescentis";	1	0	1	0
 "k__Bacteria";"p__Actinobacteria";"c__Actinobacteria";"o__Bifidobacteriales";"f__Bifidobacteriaceae";"g__Bifidobacterium";"s__longum";	1	0	1	0
 '
-  expect_warning(result <- parse_mothur_tax_summary(text = raw_data))
+  result <- parse_mothur_tax_summary(text = raw_data)
   expect_equal(length(result$taxa), 9)
   expect_equal(length(roots(result)), 1)
   expect_true(all(c("k__Bacteria", "p__Actinobacteria") %in% result$taxon_names()))
@@ -196,4 +194,14 @@ test_that("Parsing/writing the greengenes database", {
   # Delete files used for tests
   file.remove(tax_out_path)
   file.remove(seq_out_path)
+})
+
+
+test_that("Converting to phyloseq", {
+  # test round-trip
+  library(phyloseq)
+  data(enterotype)
+  expect_warning(x <- parse_phyloseq(enterotype))
+  y <- as_phyloseq(x)
+  expect_equivalent(enterotype, y)
 })

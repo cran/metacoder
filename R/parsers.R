@@ -61,16 +61,16 @@ parse_phyloseq <- function(obj, class_regex = "(.*)",
   if (! is.null(obj@sam_data)) {
     sam_data <- as.data.frame(as.list(obj@sam_data), stringsAsFactors = FALSE)
     if (! is.null(rownames(obj@sam_data))) {
-      sam_data <- cbind(sample_ids = rownames(obj@sam_data), sam_data)
+      sam_data <- cbind(sample_id = rownames(obj@sam_data), sam_data)
     }
     sam_data[] <- lapply(sam_data, as.character)
-    datasets <- c(datasets, list(sam_data = sam_data))
+    datasets <- c(datasets, list(sample_data = sam_data))
     mappings <- c(mappings, NA)
   }
   
   # Parse phylogenetic tree
   if (! is.null(obj@phy_tree)) {
-    datasets <- c(datasets, list(phylo_tree = obj@phy_tree))
+    datasets <- c(datasets, list(phy_tree = obj@phy_tree))
     mappings <- c(mappings, NA)
   }
   
@@ -490,7 +490,7 @@ parse_unite_general <- function(input = NULL, file = NULL, include_seqs = TRUE) 
 #' @param include_seqs (\code{logical} of length 1) If \code{TRUE}, include 
 #'   sequences in the output object.
 #' @param add_species (\code{logical} of length 1) If \code{TRUE}, add the
-#'   species information to the taxonomy. In this databse, the species name
+#'   species information to the taxonomy. In this database, the species name
 #'   often contains other information as well.
 #'   
 #' @return \code{\link{taxmap}}
@@ -731,4 +731,108 @@ parse_phylo  <- function(obj) {
                                        tip_label = tip_label))
   output$data <- c(output$data, list(tax_data = tax_data))
   output$replace_taxon_ids(convert_base(as.integer(output$taxon_ids())))
+}
+
+
+
+
+#' Converts the uBiome file format to taxmap
+#' 
+#' Converts the uBiome file format to taxmap. NOTE: This is experimental and might not work if
+#' uBiome changes their format. Contact the maintainers if you encounter problems/
+#' 
+#' The input file has a format like:
+#' 
+#' \preformatted{
+#'  tax_name,tax_rank,count,count_norm,taxon,parent
+#'  root,root,29393,1011911,1,
+#'  Bacteria,superkingdom,29047,1000000,2,131567
+#'  Campylobacter,genus,23,791,194,72294
+#'  Flavobacterium,genus,264,9088,237,49546
+#' }
+#' 
+#' @param file (\code{character} of length 1) The file path to the input file. 
+#'   Either "file", or "table" must be used, but only one.
+#' @param table (\code{character} of length 1) An already parsed data.frame or
+#'   tibble. Either "file", or "table" must be used, but only one.
+#' 
+#' @return \code{\link{taxmap}}
+#' 
+#' @family parsers
+#' 
+#' @export
+parse_ubiome <- function(file = NULL, table = NULL) {
+  
+  # Check that `file` and `text` and `table` are not used together
+  are_missing <- c(file = is.null(file),
+                   text = is.null(table))
+  if (sum(are_missing) != 1) {
+    stop(paste0('Either "file" or "table" must be supplied, but not both.'))
+  }
+  
+  # Read raw data
+  if (is.null(file)) {
+    raw_data <- table
+  } else {
+    raw_data <- readr::read_csv(file)
+  }
+  
+  # Make taxmap object
+  output <- parse_edge_list(input = raw_data,
+                            taxon_id = "taxon",
+                            supertaxon_id = "parent",
+                            taxon_name = "tax_name",
+                            taxon_rank = "tax_rank")
+  
+  return(output)
+}
+
+
+#' Convert a table with an edge list to taxmap
+#'
+#' Converts a table containing an edge list into a [taxa::taxmap()] object.
+#' An "edge list" is two columns in a table, where each row defines a taxon-supertaxon relationship.
+#' The contents of the edge list will be used as taxon IDs.
+#' The whole table will be included as a data set in the output object.
+#'
+#' @param input A table containing an edge list encoded by two columns.
+#' @param taxon_id The name/index of the column containing the taxon IDs.
+#' @param supertaxon_id The name/index of the column containing the taxon IDs for the supertaxon of the IDs in `taxon_col`.
+#'
+#' @family parsers
+#'
+#' @keywords internal
+parse_edge_list <- function(input, taxon_id, supertaxon_id, taxon_name, taxon_rank = NULL) {
+  
+  # Create empty taxmap object
+  output <- taxmap()
+  
+  # Make taxon ID characters
+  input[taxon_id] <- as.character(input[[taxon_id]])
+  input[supertaxon_id] <- as.character(input[[supertaxon_id]])
+  
+  # Add edge list
+  output$edge_list <- data.frame(from = input[[supertaxon_id]],
+                                 to = input[[taxon_id]],
+                                 stringsAsFactors = FALSE)
+  
+  # Add taxa
+  output$taxa <- lapply(seq_len(nrow(input)), function(i) {
+    my_name <- input[[taxon_name]][i]
+    if (is.null(taxon_rank)) {
+      my_rank <- NULL
+    } else {
+      my_rank <- input[[taxon_rank]][i]
+    }
+    my_id <- input[[taxon_id]][i]
+    taxon(name = my_name, rank = my_rank, id = my_id)
+  })
+  names(output$taxa) <- input[[taxon_id]]
+  
+  # Add data
+  input <- dplyr::mutate(input, taxon_id = taxon_ids(output))
+  input <- dplyr::select(input, taxon_id, everything())
+  output$data <- list(input = input)
+  
+  return(output)
 }

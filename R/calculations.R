@@ -4,6 +4,7 @@
 #' grouping factor and return row means in a table.
 #'
 #' @inheritParams do_calc_on_num_cols
+#' @param dataset DEPRECIATED. use "data" instead.
 #'
 #' @return A tibble
 #'
@@ -13,7 +14,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Parse dataset for examples
+#' # Parse data for examples
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
 #'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
@@ -40,10 +41,18 @@
 #'                out_names = c("Women", "Men"))
 #'
 #' }
-calc_group_mean <- function(obj, dataset, groups, cols = NULL,
-                            other_cols = FALSE, out_names = NULL) {
+calc_group_mean <- function(obj, data, groups, cols = NULL,
+                            other_cols = FALSE, out_names = NULL, dataset = NULL) {
   
-  calc_group_stat(obj, dataset, func = mean, groups = groups, cols = cols,
+  # Check for use of "dataset"
+  if (! is.null(dataset)) {
+    warning(call. = FALSE,
+            'Use of "dataset" is depreciated. Use "data" instead.')
+    data <- dataset
+  }
+  
+  
+  calc_group_stat(obj, data, func = mean, groups = groups, cols = cols,
                   other_cols = other_cols, out_names = out_names)
 }
 
@@ -57,6 +66,7 @@ calc_group_mean <- function(obj, dataset, groups, cols = NULL,
 #' magnitude of sets of number are very different.
 #'
 #' @inheritParams do_calc_on_num_cols
+#' @param dataset DEPRECIATED. use "data" instead.
 #'
 #' @return A tibble
 #'
@@ -66,7 +76,7 @@ calc_group_mean <- function(obj, dataset, groups, cols = NULL,
 #'
 #' @examples
 #' \dontrun{
-#' # Parse dataset for examples
+#' # Parse data for examples
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
 #'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
@@ -93,12 +103,19 @@ calc_group_mean <- function(obj, dataset, groups, cols = NULL,
 #'                out_names = c("Women", "Men"))
 #'
 #' }
-calc_group_rsd <- function(obj, dataset, groups, cols = NULL,
-                             other_cols = FALSE, out_names = NULL) {
+calc_group_rsd <- function(obj, data, groups, cols = NULL,
+                             other_cols = FALSE, out_names = NULL, dataset = NULL) {
+  # Check for use of "dataset"
+  if (! is.null(dataset)) {
+    warning(call. = FALSE,
+            'Use of "dataset" is depreciated. Use "data" instead.')
+    data <- dataset
+  }
+  
   rsd <- function(x, na.rm = FALSE) {
     stats::sd(x, na.rm = na.rm) / mean(x, na.rm = na.rm)
   }
-  calc_group_stat(obj, dataset, func = rsd, groups = groups, cols = cols,
+  calc_group_stat(obj, data, func = rsd, groups = groups, cols = cols,
                   other_cols = other_cols, out_names = out_names)
 }
 
@@ -109,6 +126,7 @@ calc_group_rsd <- function(obj, dataset, groups, cols = NULL,
 #' grouping factor and return row medians in a table.
 #'
 #' @inheritParams do_calc_on_num_cols
+#' @param dataset DEPRECIATED. use "data" instead.
 #'
 #' @return A tibble
 #'
@@ -118,7 +136,7 @@ calc_group_rsd <- function(obj, dataset, groups, cols = NULL,
 #'
 #' @examples
 #' \dontrun{
-#' # Parse dataset for examples
+#' # Parse data for examples
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
 #'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
@@ -145,10 +163,17 @@ calc_group_rsd <- function(obj, dataset, groups, cols = NULL,
 #'                   out_names = c("Women", "Men"))
 #'
 #' }
-calc_group_median <- function(obj, dataset, groups, cols = NULL,
-                            other_cols = FALSE, out_names = NULL) {
+calc_group_median <- function(obj, data, groups, cols = NULL,
+                            other_cols = FALSE, out_names = NULL, dataset = NULL) {
   
-  calc_group_stat(obj, dataset, func = stats::median, groups = groups, cols = cols,
+  # Check for use of "dataset"
+  if (! is.null(dataset)) {
+    warning(call. = FALSE,
+            'Use of "dataset" is depreciated. Use "data" instead.')
+    data <- dataset
+  }
+  
+  calc_group_stat(obj, data, func = stats::median, groups = groups, cols = cols,
                   other_cols = other_cols, out_names = out_names)
 }
 
@@ -157,13 +182,14 @@ calc_group_median <- function(obj, dataset, groups, cols = NULL,
 #'
 #' For a given table in a \code{\link[taxa]{taxmap}} object, apply a function to
 #' rows in groups of columns. The result of the function is used to create new
-#' columns. This is eqivalant to splitting columns of a table by a factor and
+#' columns. This is equivalent to splitting columns of a table by a factor and
 #' using \code{apply} on each group.
 #'
 #' @inheritParams do_calc_on_num_cols
 #' @param func The function to apply. It should take a vector and return a
 #'   single value. For example, \code{\link{max}} or \code{\link{mean}} could
 #'   be used.
+#' @param dataset DEPRECIATED. use "data" instead.
 #'
 #' @return A tibble
 #'
@@ -173,7 +199,7 @@ calc_group_median <- function(obj, dataset, groups, cols = NULL,
 #'
 #' @examples
 #' \dontrun{
-#' # Parse dataset for examples
+#' # Parse data for examples
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
 #'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
@@ -210,10 +236,17 @@ calc_group_median <- function(obj, dataset, groups, cols = NULL,
 #'                out_names = c("Women", "Men"))
 #'
 #' }
-calc_group_stat <- function(obj, dataset, func, groups = NULL, cols = NULL,
-                            other_cols = FALSE, out_names = NULL) {
+calc_group_stat <- function(obj, data, func, groups = NULL, cols = NULL,
+                            other_cols = FALSE, out_names = NULL, dataset = NULL) {
   
-  do_calc_on_num_cols(obj, dataset, cols = cols, groups = groups,
+  # Check for use of "dataset"
+  if (! is.null(dataset)) {
+    warning(call. = FALSE,
+            'Use of "dataset" is depreciated. Use "data" instead.')
+    data <- dataset
+  }
+  
+  do_calc_on_num_cols(obj, data, cols = cols, groups = groups,
                       other_cols = other_cols, out_names = out_names,
                       func =  function(count_table, cols = cols, groups = groups) {
                         as.data.frame(lapply(split(cols, groups), function(col_index) {
@@ -232,6 +265,7 @@ calc_group_stat <- function(obj, dataset, func, groups = NULL, cols = NULL,
 #' have already been summed per taxon.
 #'
 #' @inheritParams do_calc_on_num_cols
+#' @param dataset DEPRECIATED. use "data" instead.
 #'
 #' @return A tibble
 #'
@@ -241,7 +275,7 @@ calc_group_stat <- function(obj, dataset, func, groups = NULL, cols = NULL,
 #' 
 #' @examples
 #' \dontrun{
-#' # Parse dataset for examples
+#' # Parse data for examples
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
 #'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
@@ -271,10 +305,17 @@ calc_group_stat <- function(obj, dataset, func, groups = NULL, cols = NULL,
 #'                out_names = c("Women", "Men"))
 #' 
 #' }
-calc_obs_props <- function(obj, dataset, cols = NULL, groups = NULL,
-                           other_cols = FALSE, out_names = NULL) {
+calc_obs_props <- function(obj, data, cols = NULL, groups = NULL,
+                           other_cols = FALSE, out_names = NULL, dataset = NULL) {
 
-  do_calc_on_num_cols(obj, dataset, cols = cols, groups = groups,
+  # Check for use of "dataset"
+  if (! is.null(dataset)) {
+    warning(call. = FALSE,
+            'Use of "dataset" is depreciated. Use "data" instead.')
+    data <- dataset
+  }
+  
+  do_calc_on_num_cols(obj, data, cols = cols, groups = groups,
                       other_cols = other_cols, out_names = out_names,
                       func =  function(count_table, cols = cols, groups = groups) {
                         # Explain what is happening 
@@ -310,6 +351,7 @@ calc_obs_props <- function(obj, dataset, cols = NULL, groups = NULL,
 #'   in the table. For example \code{use_total = TRUE, min_count = 10} would
 #'   convert all counts of any row to zero if the total for all counts in that
 #'   row was less than 10.
+#' @param dataset DEPRECIATED. use "data" instead.
 #'
 #' @return A tibble
 #'
@@ -319,7 +361,7 @@ calc_obs_props <- function(obj, dataset, cols = NULL, groups = NULL,
 #' 
 #' @examples
 #' \dontrun{
-#' # Parse dataset for examples
+#' # Parse data for examples
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
 #'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
@@ -344,14 +386,21 @@ calc_obs_props <- function(obj, dataset, cols = NULL, groups = NULL,
 #'                 out_names = c("a", "b", "c"))
 #' 
 #' }
-zero_low_counts <- function(obj, dataset, min_count = 2, use_total = FALSE,
-                            cols = NULL, other_cols = FALSE, out_names = NULL) {
+zero_low_counts <- function(obj, data, min_count = 2, use_total = FALSE,
+                            cols = NULL, other_cols = FALSE, out_names = NULL, dataset = NULL) {
 
+  # Check for use of "dataset"
+  if (! is.null(dataset)) {
+    warning(call. = FALSE,
+            'Use of "dataset" is depreciated. Use "data" instead.')
+    data <- dataset
+  }
+  
   do_it <- function(count_table, cols = cols, groups = groups) {
     # Convert low counts to zero
     if (use_total) {
-      row_sums <- rowSums(count_table)
-      to_zero <- row_sums < min_count & row_sums > 0
+      row_sums <- rowSums(count_table, na.rm = TRUE)
+      to_zero <- (! is.na(row_sums)) & row_sums < min_count & row_sums > 0
       if (sum(to_zero) > 0) {
         my_print("Zeroing ", sum(to_zero), ' of ', length(to_zero),
                  ' rows with total counts less than ', min_count)
@@ -360,7 +409,7 @@ zero_low_counts <- function(obj, dataset, min_count = 2, use_total = FALSE,
       }
       count_table[to_zero, ] <- 0
     } else {
-      to_zero <- count_table < min_count & count_table > 0
+      to_zero <- (! is.na(count_table)) & count_table < min_count & count_table > 0
       if (sum(to_zero) > 0) {
         my_print("Zeroing ", sum(to_zero), ' of ', length(to_zero),
                  ' counts less than ', min_count, '.')
@@ -372,7 +421,7 @@ zero_low_counts <- function(obj, dataset, min_count = 2, use_total = FALSE,
     return(count_table)
   }
   
-  do_calc_on_num_cols(obj, dataset, cols = cols, other_cols = other_cols,
+  do_calc_on_num_cols(obj, data, cols = cols, other_cols = other_cols,
                                 out_names = out_names, func = do_it)
 }
 
@@ -387,6 +436,7 @@ zero_low_counts <- function(obj, dataset, min_count = 2, use_total = FALSE,
 #' @param sample_size The sample size counts will be rarefied to. This can be 
 #'   either a single integer or a vector of integers of equal length to the 
 #'   number of columns.
+#' @param dataset DEPRECIATED. use "data" instead.
 #'
 #' @return A tibble
 #'
@@ -396,7 +446,7 @@ zero_low_counts <- function(obj, dataset, min_count = 2, use_total = FALSE,
 #' 
 #' @examples
 #' \dontrun{
-#' # Parse dataset for examples
+#' # Parse data for examples
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
 #'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
@@ -421,9 +471,17 @@ zero_low_counts <- function(obj, dataset, min_count = 2, use_total = FALSE,
 #'                out_names = c("a", "b", "c"))
 #' 
 #' }
-rarefy_obs <- function(obj, dataset, sample_size = NULL, cols = NULL,
-                       other_cols = FALSE, out_names = NULL) {
-  do_calc_on_num_cols(obj, dataset, cols = cols, other_cols = other_cols,
+rarefy_obs <- function(obj, data, sample_size = NULL, cols = NULL,
+                       other_cols = FALSE, out_names = NULL, dataset = NULL) {
+  
+  # Check for use of "dataset"
+  if (! is.null(dataset)) {
+    warning(call. = FALSE,
+            'Use of "dataset" is depreciated. Use "data" instead.')
+    data <- dataset
+  }
+  
+  do_calc_on_num_cols(obj, data, cols = cols, other_cols = other_cols,
                       out_names = out_names,
                       func =  function(count_table, cols = cols, groups = groups) {
                         if (is.null(sample_size)) {
@@ -446,9 +504,9 @@ rarefy_obs <- function(obj, dataset, sample_size = NULL, cols = NULL,
 #' these results.
 #' 
 #' @param obj A \code{\link[taxa]{taxmap}} object
-#' @param dataset The name of a table in \code{obj} that contains data for each 
+#' @param data The name of a table in \code{obj} that contains data for each 
 #'   sample in columns.
-#' @param cols The names/indexes of columns in \code{dataset} to use. By
+#' @param cols The names/indexes of columns in \code{data} to use. By
 #'   default, all numeric columns are used. Takes one of the following inputs:
 #'   \describe{
 #'     \item{TRUE/FALSE:}{All/No columns will used.}
@@ -460,7 +518,7 @@ rarefy_obs <- function(obj, dataset, sample_size = NULL, cols = NULL,
 #' @param groups A vector defining how samples are grouped into "treatments". Must be the same
 #'   order and length as \code{cols}.
 #' @param func The function to apply for each comparison. For each row in 
-#'   \code{dataset}, for each combination of groups, this function will 
+#'   \code{data}, for each combination of groups, this function will 
 #'   receive the data for each treatment, passed as two character vectors.
 #'   Therefore the function must take at least 2 arguments corresponding to the
 #'   two groups compared. The function should return a vector or list of
@@ -486,6 +544,7 @@ rarefy_obs <- function(obj, dataset, sample_size = NULL, cols = NULL,
 #' @param other_cols If \code{TRUE}, preserve all columns not in 
 #'   \code{cols} in the output. If \code{FALSE}, dont keep other columns. 
 #'   If a column names or indexes are supplied, only preserve those columns.
+#' @param dataset DEPRECIATED. use "data" instead.
 #'   
 #' @return A tibble
 #'   
@@ -493,25 +552,25 @@ rarefy_obs <- function(obj, dataset, sample_size = NULL, cols = NULL,
 #' 
 #' @examples
 #' \dontrun{
-#' # Parse dataset for plotting
+#' # Parse data for plotting
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
 #'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
 #' 
 #' # Convert counts to proportions
-#' x$data$otu_table <- calc_obs_props(x, dataset = "tax_data", cols = hmp_samples$sample_id)
+#' x$data$otu_table <- calc_obs_props(x, data = "tax_data", cols = hmp_samples$sample_id)
 #' 
 #' # Get per-taxon counts
-#' x$data$tax_table <- calc_taxon_abund(x, dataset = "otu_table", cols = hmp_samples$sample_id)
+#' x$data$tax_table <- calc_taxon_abund(x, data = "otu_table", cols = hmp_samples$sample_id)
 #' 
 #' # Calculate difference between groups
-#' x$data$diff_table <- compare_groups(x, dataset = "tax_table",
+#' x$data$diff_table <- compare_groups(x, data = "tax_table",
 #'                                     cols = hmp_samples$sample_id,
 #'                                     groups = hmp_samples$body_site)
 #'
 #' # Plot results (might take a few minutes)
 #' heat_tree_matrix(x,
-#'                  dataset = "diff_table",
+#'                  data = "diff_table",
 #'                  node_size = n_obs,
 #'                  node_label = taxon_names,
 #'                  node_color = log2_median_ratio,
@@ -525,35 +584,45 @@ rarefy_obs <- function(obj, dataset, sample_size = NULL, cols = NULL,
 #' }
 #' 
 #' @export
-compare_groups <- function(obj, dataset, cols, groups,
+compare_groups <- function(obj, data, cols, groups,
                            func = NULL, combinations = NULL,
-                           other_cols = FALSE) {
+                           other_cols = FALSE, dataset = NULL) {
+  
+  # Check for use of "dataset"
+  if (! is.null(dataset)) {
+    warning(call. = FALSE,
+            'Use of "dataset" is depreciated. Use "data" instead.')
+    data <- dataset
+  }
+  
   # Get abundance by sample data
-  abund_data <- get_taxmap_table(obj, dataset)
+  abund_data <- get_taxmap_table(obj, data)
   
   # Parse columns to use
-  cols <- get_numeric_cols(obj, dataset, cols)
+  cols <- get_numeric_cols(obj, data, cols)
   
   # Check groups option
   groups <- check_option_groups(groups, cols)
   
-  # Define defualt function
+  # Define default function
   if (is.null(func)) {
     func <- function(abund_1, abund_2) {
-      log_ratio <- log2(stats::median(abund_1) / stats::median(abund_2))
-      if (is.nan(log_ratio)) {
+      median_1 <- stats::median(abund_1, na.rm = TRUE)
+      median_2 <- stats::median(abund_2, na.rm = TRUE)
+      log_ratio <- log2(median_1 / median_2)
+      if (is.nan(log_ratio) | is.na(log_ratio)) {
         log_ratio <- 0
       }
       list(log2_median_ratio = log_ratio,
-           median_diff = stats::median(abund_1) - stats::median(abund_2),
-           mean_diff = mean(abund_1) - mean(abund_2),
+           median_diff = median_1 - median_2,
+           mean_diff = mean(abund_1, na.rm = TRUE) - mean(abund_2, na.rm = TRUE),
            wilcox_p_value = stats::wilcox.test(abund_1, abund_2)$p.value)
     }
   }
   
   # Find other columns
   #   These might be added back to the output later
-  other_cols <- get_taxmap_other_cols(obj, dataset, cols, other_cols)
+  other_cols <- get_taxmap_other_cols(obj, data, cols, other_cols)
   
   # Get every combination of groups to compare
   if (is.null(combinations)) {
@@ -629,6 +698,7 @@ compare_groups <- function(obj, dataset, cols, groups,
 #' (e.g. OTU counts) to per-taxon counts.
 #' 
 #' @inheritParams do_calc_on_num_cols
+#' @param dataset DEPRECIATED. use "data" instead.
 #'   
 #' @return A tibble
 #'   
@@ -637,7 +707,7 @@ compare_groups <- function(obj, dataset, cols, groups,
 #' @export
 #' 
 #' @examples \dontrun{
-#' # Parse dataset for example
+#' # Parse data for example
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
 #'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
@@ -652,7 +722,7 @@ compare_groups <- function(obj, dataset, cols, groups,
 #' 
 #' # Calculate the taxon abundance for groups of columns (e.g. treatments)
 #' #  Note that we do not need to use the "cols" option for this since all
-#' #  numeric columns are samples in this dataset. If there were numeric columns
+#' #  numeric columns are samples in this data. If there were numeric columns
 #' #  that were not samples present in hmp_samples, the "cols" would be needed.
 #' calc_taxon_abund(x, "tax_data", groups = hmp_samples$sex)
 #' calc_taxon_abund(x, "tax_data", groups = hmp_samples$body_site)
@@ -672,9 +742,17 @@ compare_groups <- function(obj, dataset, cols, groups,
 #'                  groups = rep("total", nrow(hmp_samples)))
 #' }
 #' 
-calc_taxon_abund <- function(obj, dataset, cols = NULL, groups = NULL,
-                             out_names = NULL) {
-
+#' @keywords internal
+calc_taxon_abund <- function(obj, data, cols = NULL, groups = NULL,
+                                 out_names = NULL, dataset = NULL) {
+  
+  # Check for use of "dataset"
+  if (! is.null(dataset)) {
+    warning(call. = FALSE,
+            'Use of "dataset" is depreciated. Use "data" instead.')
+    data <- dataset
+  }
+  
   do_it <- function(count_table, cols = cols, groups = groups) {
     # Alert user 
     my_print("Summing per-taxon counts from ", length(cols), " columns ",
@@ -682,16 +760,19 @@ calc_taxon_abund <- function(obj, dataset, cols = NULL, groups = NULL,
              "for ", length(obj$taxon_ids()), ' taxa')
     
     # Sum counts per taxon for each sample
-    obs_indexes <- obj$obs(dataset)
+    obs_indexes <- obj$obs(data)
     output <- lapply(split(cols, groups), function(col_index) {
-      vapply(obs_indexes, function(i) sum(unlist(count_table[i, col_index])), numeric(1))
+      col_subset <- count_table[, col_index]
+      vapply(obs_indexes, function(i) {
+        sum(col_subset[i, ])
+      }, numeric(1))
     })
     output <- as.data.frame(output, stringsAsFactors = FALSE)
     
     return(output)
   }
-
-  output <- do_calc_on_num_cols(obj, dataset, cols = cols, groups = groups, 
+  
+  output <- do_calc_on_num_cols(obj, data, cols = cols, groups = groups, 
                                 other_cols = NULL, out_names = out_names,
                                 func = do_it)
   
@@ -707,11 +788,13 @@ calc_taxon_abund <- function(obj, dataset, cols = NULL, groups = NULL,
 #' Count the number of samples
 #'
 #' For a given table in a \code{\link[taxa]{taxmap}} object, count the number of
-#' samples with greater than zero occurrences.
+#' samples (i.e. columns) with greater than a minimum value.
 #' 
 #' @inheritParams do_calc_on_num_cols
 #' @param drop If \code{groups} is not used, return a vector of the results instead
 #'   of a table with one column.
+#' @param more_than A sample must have greater than this value for it to be counted as present.
+#' @param dataset DEPRECIATED. use "data" instead.
 #'   
 #' @return A tibble
 #'
@@ -719,36 +802,48 @@ calc_taxon_abund <- function(obj, dataset, cols = NULL, groups = NULL,
 #'
 #' @examples
 #' \dontrun{
-#' # Parse dataset for example
+#' # Parse data for example
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
 #'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
 #'                    
-#' # Count samples with reads
-#' calc_n_samples(x, dataset = "tax_data")
+#' # Count samples with at least one read
+#' calc_n_samples(x, data = "tax_data")
+#' 
+#' # Count samples with at least 5 reads
+#' calc_n_samples(x, data = "tax_data", more_than = 5)
 #' 
 #' # Return a vector instead of a table
-#' calc_n_samples(x, dataset = "tax_data", drop = TRUE)
+#' calc_n_samples(x, data = "tax_data", drop = TRUE)
 #' 
 #' # Only use some columns
-#' calc_n_samples(x, dataset = "tax_data", cols = hmp_samples$sample_id[1:5])
+#' calc_n_samples(x, data = "tax_data", cols = hmp_samples$sample_id[1:5])
 #' 
 #' # Return a count for each treatment
-#' calc_n_samples(x, dataset = "tax_data", groups = hmp_samples$body_site)
+#' calc_n_samples(x, data = "tax_data", groups = hmp_samples$body_site)
 #' 
 #' # Rename output columns 
-#' calc_n_samples(x, dataset = "tax_data", groups = hmp_samples$body_site,
+#' calc_n_samples(x, data = "tax_data", groups = hmp_samples$body_site,
 #'                out_names = c("A", "B", "C", "D", "E"))
 #' 
 #' # Preserve other columns from input
-#' calc_n_samples(x, dataset = "tax_data", other_cols = TRUE)
-#' calc_n_samples(x, dataset = "tax_data", other_cols = 2)
-#' calc_n_samples(x, dataset = "tax_data", other_cols = "otu_id")
+#' calc_n_samples(x, data = "tax_data", other_cols = TRUE)
+#' calc_n_samples(x, data = "tax_data", other_cols = 2)
+#' calc_n_samples(x, data = "tax_data", other_cols = "otu_id")
 #' }
 #' 
 #' @export
-calc_n_samples <- function(obj, dataset, cols = NULL, groups = "n_samples",
-                           other_cols = FALSE, out_names = NULL, drop = FALSE) {
+calc_n_samples <- function(obj, data, cols = NULL, groups = "n_samples",
+                           other_cols = FALSE, out_names = NULL, drop = FALSE,
+                           more_than = 0, dataset = NULL) {
+  
+  # Check for use of "dataset"
+  if (! is.null(dataset)) {
+    warning(call. = FALSE,
+            'Use of "dataset" is depreciated. Use "data" instead.')
+    data <- dataset
+  }
+  
   # Check drop option
   if (drop && length(unique(groups)) > 1) {
     stop(call. = FALSE,
@@ -757,19 +852,20 @@ calc_n_samples <- function(obj, dataset, cols = NULL, groups = "n_samples",
 
   do_it <- function(count_table, cols = cols, groups = groups) {
     # Alert user 
-    my_print("Calculating number of samples with non-zero counts from ", length(cols), " columns ",
+    my_print("Calculating number of samples with a value greater than ", more_than, " for ", length(cols), " columns ",
              ifelse(length(unique(groups)) == 1, "", paste0("in ", length(unique(groups)), " groups ")),
-             "for ", length(obj$taxon_ids()), ' observations')
+             "for ", nrow(count_table), ' observations')
     
     # Calculate number of samples
     output <- lapply(split(cols, groups), function(col_index) {
-      vapply(seq_len(nrow(count_table)), function(i) sum(count_table[i, col_index] > 0), integer(1))
+      vapply(seq_len(nrow(count_table)), function(i) sum(count_table[i, col_index] > more_than), integer(1))
     })
     as.data.frame(output, stringsAsFactors = FALSE)
   }
   
-  output <- do_calc_on_num_cols(obj, dataset, cols = cols, groups = groups, 
-                                other_cols = other_cols, out_names = out_names, func = do_it)
+  output <- do_calc_on_num_cols(obj, data, cols = cols, groups = groups, 
+                                other_cols = other_cols, out_names = out_names,
+                                func = do_it)
   
   # Drop second dimension
   if (drop) {
@@ -777,4 +873,144 @@ calc_n_samples <- function(obj, dataset, cols = NULL, groups = "n_samples",
   } 
   
   return(output)
+}
+
+
+#' Calculate the proportion of samples
+#'
+#' For a given table in a \code{\link[taxa]{taxmap}} object, calculate the
+#' proportion of samples (i.e. columns) with greater than a minimum value.
+#' 
+#' @inheritParams do_calc_on_num_cols
+#' @param drop If \code{groups} is not used, return a vector of the results instead
+#'   of a table with one column.
+#' @param more_than A sample must have greater than this value for it to be counted as present.
+#' @param dataset DEPRECIATED. use "data" instead.
+#'   
+#' @return A tibble
+#'
+#' @family calculations
+#'
+#' @examples
+#' \dontrun{
+#' # Parse data for example
+#' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
+#'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+#'                    class_regex = "^(.+)__(.+)$")
+#'                    
+#' # Count samples with at least one read
+#' calc_prop_samples(x, data = "tax_data")
+#' 
+#' # Count samples with at least 5 reads
+#' calc_prop_samples(x, data = "tax_data", more_than = 5)
+#' 
+#' # Return a vector instead of a table
+#' calc_prop_samples(x, data = "tax_data", drop = TRUE)
+#' 
+#' # Only use some columns
+#' calc_prop_samples(x, data = "tax_data", cols = hmp_samples$sample_id[1:5])
+#' 
+#' # Return a count for each treatment
+#' calc_prop_samples(x, data = "tax_data", groups = hmp_samples$body_site)
+#' 
+#' # Rename output columns 
+#' calc_prop_samples(x, data = "tax_data", groups = hmp_samples$body_site,
+#'                out_names = c("A", "B", "C", "D", "E"))
+#' 
+#' # Preserve other columns from input
+#' calc_prop_samples(x, data = "tax_data", other_cols = TRUE)
+#' calc_prop_samples(x, data = "tax_data", other_cols = 2)
+#' calc_prop_samples(x, data = "tax_data", other_cols = "otu_id")
+#' }
+#' 
+#' @export
+calc_prop_samples <- function(obj, data, cols = NULL, groups = "n_samples",
+                              other_cols = FALSE, out_names = NULL, drop = FALSE,
+                              more_than = 0, dataset = NULL) {
+  
+  # Check for use of "dataset"
+  if (! is.null(dataset)) {
+    warning(call. = FALSE,
+            'Use of "dataset" is depreciated. Use "data" instead.')
+    data <- dataset
+  }
+  
+  # Check drop option
+  if (drop && length(unique(groups)) > 1) {
+    stop(call. = FALSE,
+         "Cannot drop dimension (conver to vector) when there are more than one group")
+  }
+  
+  do_it <- function(count_table, cols = cols, groups = groups) {
+    # Alert user 
+    my_print("Calculating the proportion of samples with a value greater than ", more_than, " for ", length(cols), " columns ",
+             ifelse(length(unique(groups)) == 1, "", paste0("in ", length(unique(groups)), " groups ")),
+             "for ", nrow(count_table), ' observations')
+    
+    # Calculate number of samples
+    output <- lapply(split(cols, groups), function(col_index) {
+      vapply(seq_len(nrow(count_table)), function(i) sum(count_table[i, col_index] > more_than), integer(1)) / length(col_index)
+    })
+    as.data.frame(output, stringsAsFactors = FALSE)
+  }
+  
+  output <- do_calc_on_num_cols(obj, data, cols = cols, groups = groups, 
+                                other_cols = other_cols, out_names = out_names,
+                                func = do_it)
+  
+  # Drop second dimension
+  if (drop) {
+    output <- stats::setNames(output[[2]], output$taxon_id)
+  } 
+  
+  return(output)
+}
+
+
+#' Apply a function to groups of columns
+#'
+#' For a given table in a \code{\link[taxa]{taxmap}} object, apply a function to
+#' rows in groups of columns. The result of the function is used to create new
+#' columns. This is equivalent to splitting columns of a table by a factor and
+#' using \code{apply} on each group.
+#'
+#' @inheritParams do_calc_on_num_cols
+#' @param threshold The value a number must be greater than to count as present.
+#'   By, default, anything above 0 is considered present.
+#' @param dataset DEPRECIATED. use "data" instead.
+#'   
+#' @return A tibble
+#'
+#' @family calculations
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Parse data for examples
+#' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
+#'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+#'                    class_regex = "^(.+)__(.+)$")
+#'
+#' # Convert count to presence/absence
+#' counts_to_presence(x, "tax_data")
+#'
+#' # Check if there are any reads in each group of samples
+#' counts_to_presence(x, "tax_data", groups = hmp_samples$body_site)
+#'
+#' }
+counts_to_presence <- function(obj, data, threshold = 0, groups = NULL,
+                               cols = NULL, other_cols = FALSE,
+                               out_names = NULL, dataset = NULL) {
+  
+  # Check for use of "dataset"
+  if (! is.null(dataset)) {
+    warning(call. = FALSE,
+            'Use of "dataset" is depreciated. Use "data" instead.')
+    data <- dataset
+  }
+  
+  calc_group_stat(obj, data = data, func = function(v) any(v > threshold),
+                  groups = groups, cols = cols, other_cols = other_cols,
+                  out_names = out_names)
 }

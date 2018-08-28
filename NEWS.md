@@ -1,5 +1,32 @@
 # News 
 
+##  metacoder 0.3.0
+
+### Bug fixes
+
+* Fixed bug in `calc_n_samples` where the message reported the number of taxa instead of the number of rows in the table.
+* Fixed bug in `heat_tree_matrix` that happened when factors were used for treatments (issue [#240](https://github.com/grunwaldlab/metacoder/issues/240).
+* `zero_low_counts` now ignores `NA`s instead of odd error.
+* `compare_groups` now ignores `NA`s instaed of returning `NaN`
+
+### Improvements
+
+* Added `more_than` option to `calc_n_samples` so that users can set the minimum threshold for whether a sample is counted or not instead of it always 1.
+* Added `calc_prop_samples` function for calculating the proportion of samples with a value greater than 0 (issues [#233](https://github.com/grunwaldlab/metacoder/issues/233).
+* `primersearch` is faster and takes less memory by using `ape::DNAbin` objects internally.
+* Made `calc_taxon_abund` about 5x faster.
+
+### New features
+
+* `taxmap` objects can be converted to `phyloseq` objects using `as_phyloseq`.
+* Added parser for uBiome data.
+
+### Changes
+
+* `primersearch` now takes and returns a `taxmap` object with results added as tables. `primersearch_raw` is a new function that behaves like the old `primersearch` did, returning a table.
+* The `dataset` option of many functions has been renamed to `data` to match the option name in the `taxa` package.
+* Numerous spelling fixes.
+
 ##  metacoder 0.2.1
 
 ### Bug fixes
