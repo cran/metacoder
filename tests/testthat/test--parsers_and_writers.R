@@ -201,7 +201,18 @@ test_that("Converting to phyloseq", {
   # test round-trip
   library(phyloseq)
   data(enterotype)
-  expect_warning(x <- parse_phyloseq(enterotype))
+  x <- parse_phyloseq(enterotype)
   y <- as_phyloseq(x)
   expect_equivalent(enterotype, y)
+})
+
+
+test_that("Parsing/writing dada2 output", {
+  # test round-trip
+  load("example_data/dada2.RData")
+  obj <- parse_dada2(seq_table = seqtab.nochim, tax_table = taxa)
+  seq_table <- make_dada2_asv_table(obj)
+  tax_table <- make_dada2_tax_table(obj)
+  expect_equal(seqtab.nochim, seq_table)
+  expect_equal(taxa, tax_table)
 })

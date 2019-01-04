@@ -44,6 +44,8 @@ parse_phyloseq <- function(obj, class_regex = "(.*)",
   # Parse taxonomic data
   possible_ranks <- unique(unlist(strsplit(taxa::ranks_ref$ranks, split = ",")))
   tax_data <- as.data.frame(obj@tax_table, stringsAsFactors = FALSE)
+  tax_cols <- colnames(tax_data)
+  tax_data <- cbind(data.frame(otu_id = rownames(tax_data), stringsAsFactors = FALSE), tax_data)
   
   # Parse OTU tables
   if (! is.null(obj@otu_table)) {
@@ -82,7 +84,6 @@ parse_phyloseq <- function(obj, class_regex = "(.*)",
   }
   
   # Construct output
-  tax_cols <- colnames(tax_data)
   output <- taxa::parse_tax_data(tax_data = tax_data, 
                                  datasets = datasets,
                                  class_cols = tax_cols, 
@@ -92,7 +93,15 @@ parse_phyloseq <- function(obj, class_regex = "(.*)",
                                  class_key = class_key)
   
   # Remove NA taxa
-  output$filter_taxa(output$taxon_names() != "NA")
+  withCallingHandlers({
+    output$filter_taxa(output$taxon_names() != "NA")
+  }, warning=function(w) {
+    if (conditionMessage(w) %in% c(
+      'There is no "taxon_id" column in the data set "3", so there are no taxon IDs.',
+      'The data set "4" is named, but not named by taxon ids.'
+    ))
+      invokeRestart("muffleWarning")
+  })
   
   # Move OTU table to front of data if it is there
   if ("otu_table" %in% names(output$data)) {
@@ -833,6 +842,49 @@ parse_edge_list <- function(input, taxon_id, supertaxon_id, taxon_name, taxon_ra
   input <- dplyr::mutate(input, taxon_id = taxon_ids(output))
   input <- dplyr::select(input, taxon_id, everything())
   output$data <- list(input = input)
+  
+  return(output)
+}
+
+
+#' Convert the output of dada2 to a taxmap object
+#'
+#' Convert the ASV table and taxonomy table returned by dada2 into a taxmap object. An example of
+#' the input format can be found by following the dada2 tutorial here:
+#' shttps://benjjneb.github.io/dada2/tutorial.html
+#'
+#' @param seq_table The ASV abundance matrix, with rows as samples and columns as ASV ids or
+#'   sequences
+#' @param tax_table The table with taxonomic classifications for ASVs, with ASVs in rows and
+#'   taxonomic ranks as columns.
+#' @inheritParams taxa::parse_tax_data
+#'
+#' @return \code{\link{taxmap}}
+#'
+#' @family parsers
+#'
+#' @export
+parse_dada2 <- function(seq_table, tax_table, class_key = "taxon_name", class_regex = "(.*)", include_match = TRUE) {
+  # Convert sequence table to tibble
+  seq_table <- t(seq_table)
+  seq_table <- dplyr::bind_cols(asv_id = rownames(seq_table), dplyr::as_tibble(seq_table))
+  
+  # Convert taxonomy table to tibble
+  tax_table <- dplyr::as_tibble(cbind(asv_id = rownames(tax_table), tax_table))
+  
+  # Convert to taxmap format
+  output <- taxa::parse_tax_data(tax_table,
+                                 class_cols = -1,
+                                 named_by_rank = TRUE,
+                                 class_key = class_key,
+                                 class_regex = class_regex,
+                                 include_match = include_match,
+                                 include_tax_data = FALSE,
+                                 datasets = list(asv_table = seq_table),
+                                 mappings = c("asv_id" = "asv_id"))
+  
+  # Remove NA taxa
+  output$filter_taxa(!is.na(taxon_names))
   
   return(output)
 }
