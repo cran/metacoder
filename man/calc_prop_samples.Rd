@@ -4,7 +4,7 @@
 \alias{calc_prop_samples}
 \title{Calculate the proportion of samples}
 \usage{
-calc_prop_samples(obj, data, cols = NULL, groups = "n_samples",
+calc_prop_samples(obj, data, cols = NULL, groups = "prop_samples",
   other_cols = FALSE, out_names = NULL, drop = FALSE,
   more_than = 0, dataset = NULL)
 }
@@ -57,7 +57,7 @@ proportion of samples (i.e. columns) with greater than a minimum value.
 \dontrun{
 # Parse data for example
 x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
-                   class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+                   class_key = c(tax_rank = "taxon_rank", tax_name = "taxon_name"),
                    class_regex = "^(.+)__(.+)$")
                    
 # Count samples with at least one read

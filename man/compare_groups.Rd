@@ -28,7 +28,7 @@ order and length as \code{cols}.}
 
 \item{func}{The function to apply for each comparison. For each row in 
 \code{data}, for each combination of groups, this function will 
-receive the data for each treatment, passed as two character vectors.
+receive the data for each treatment, passed as two vectors.
 Therefore the function must take at least 2 arguments corresponding to the
 two groups compared. The function should return a vector or list of
 results of a fixed length. If named, the names will be used in the output.
@@ -72,7 +72,7 @@ these results.
 \dontrun{
 # Parse data for plotting
 x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
-                   class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+                   class_key = c(tax_rank = "taxon_rank", tax_name = "taxon_name"),
                    class_regex = "^(.+)__(.+)$")
 
 # Convert counts to proportions
@@ -98,6 +98,13 @@ heat_tree_matrix(x,
                  edge_color_interval = c(-3, 3),
                  node_size_axis_label = "Number of OTUs",
                  node_color_axis_label = "Log2 ratio median proportions")
+                 
+# How to get results for only some pairs of groups
+compare_groups(x, data = "tax_table",
+               cols = hmp_samples$sample_id,
+               groups = hmp_samples$body_site,
+               combinations = list(c('Nose', 'Saliva'),
+                                   c('Skin', 'Throat')))
 
 }
 

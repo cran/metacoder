@@ -16,7 +16,7 @@
 #' \dontrun{
 #' # Parse data for examples
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
-#'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+#'                    class_key = c(tax_rank = "taxon_rank", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
 #'
 #' # Calculate the means for each group
@@ -78,7 +78,7 @@ calc_group_mean <- function(obj, data, groups, cols = NULL,
 #' \dontrun{
 #' # Parse data for examples
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
-#'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+#'                    class_key = c(tax_rank = "taxon_rank", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
 #'
 #' # Calculate the RSD for each group
@@ -138,7 +138,7 @@ calc_group_rsd <- function(obj, data, groups, cols = NULL,
 #' \dontrun{
 #' # Parse data for examples
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
-#'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+#'                    class_key = c(tax_rank = "taxon_rank", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
 #'
 #' # Calculate the medians for each group
@@ -201,7 +201,7 @@ calc_group_median <- function(obj, data, groups, cols = NULL,
 #' \dontrun{
 #' # Parse data for examples
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
-#'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+#'                    class_key = c(tax_rank = "taxon_rank", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
 #'
 #' # Apply a function to every value without grouping 
@@ -249,7 +249,7 @@ calc_group_stat <- function(obj, data, func, groups = NULL, cols = NULL,
   do_calc_on_num_cols(obj, data, cols = cols, groups = groups,
                       other_cols = other_cols, out_names = out_names,
                       func =  function(count_table, cols = cols, groups = groups) {
-                        tibble::as.tibble(lapply(split(cols, groups), function(col_index) {
+                        tibble::as_tibble(lapply(split(cols, groups), function(col_index) {
                           apply(count_table[, col_index], MARGIN = 1, FUN = func)
                         }))
                       }
@@ -277,7 +277,7 @@ calc_group_stat <- function(obj, data, func, groups = NULL, cols = NULL,
 #' \dontrun{
 #' # Parse data for examples
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
-#'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+#'                    class_key = c(tax_rank = "taxon_rank", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
 #'                    
 #' # Calculate proportions for all numeric columns
@@ -363,7 +363,7 @@ calc_obs_props <- function(obj, data, cols = NULL, groups = NULL,
 #' \dontrun{
 #' # Parse data for examples
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
-#'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+#'                    class_key = c(tax_rank = "taxon_rank", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
 #'                    
 #' # Default use
@@ -418,7 +418,7 @@ zero_low_counts <- function(obj, data, min_count = 2, use_total = FALSE,
       }
       count_table[to_zero] <- 0
     }
-    names(count_table) <- groups # needed because do_calc_on_num_cols assumes column named by groups even though this function does not use groups currently
+    names(count_table) <- as.character(groups) # needed because do_calc_on_num_cols assumes column named by groups even though this function does not use groups currently
     return(count_table)
   }
   
@@ -449,7 +449,7 @@ zero_low_counts <- function(obj, data, min_count = 2, use_total = FALSE,
 #' \dontrun{
 #' # Parse data for examples
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
-#'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+#'                    class_key = c(tax_rank = "taxon_rank", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
 #'                    
 #' # Rarefy all numeric columns
@@ -489,8 +489,8 @@ rarefy_obs <- function(obj, data, sample_size = NULL, cols = NULL,
                           sample_size <- min(colSums(count_table)) # Calculate minimum count if no sample size is given
                           my_print("Rarefying to ", sample_size, " since that is the lowest sample total.")
                         }
-                        output <- tibble::as.tibble(t(vegan::rrarefy(t(count_table), sample = sample_size)))
-                        names(output) <- groups # needed because do_calc_on_num_cols assumes column named by groups even though this function does not use groups currently
+                        output <- tibble::as_tibble(t(vegan::rrarefy(t(count_table), sample = sample_size)))
+                        names(output) <- as.character(groups) # needed because do_calc_on_num_cols assumes column named by groups even though this function does not use groups currently
                         return(output)
                       }
   )
@@ -522,7 +522,7 @@ rarefy_obs <- function(obj, data, sample_size = NULL, cols = NULL,
 #'   order and length as \code{cols}.
 #' @param func The function to apply for each comparison. For each row in 
 #'   \code{data}, for each combination of groups, this function will 
-#'   receive the data for each treatment, passed as two character vectors.
+#'   receive the data for each treatment, passed as two vectors.
 #'   Therefore the function must take at least 2 arguments corresponding to the
 #'   two groups compared. The function should return a vector or list of
 #'   results of a fixed length. If named, the names will be used in the output.
@@ -557,7 +557,7 @@ rarefy_obs <- function(obj, data, sample_size = NULL, cols = NULL,
 #' \dontrun{
 #' # Parse data for plotting
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
-#'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+#'                    class_key = c(tax_rank = "taxon_rank", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
 #' 
 #' # Convert counts to proportions
@@ -583,6 +583,13 @@ rarefy_obs <- function(obj, data, sample_size = NULL, cols = NULL,
 #'                  edge_color_interval = c(-3, 3),
 #'                  node_size_axis_label = "Number of OTUs",
 #'                  node_color_axis_label = "Log2 ratio median proportions")
+#'                  
+#' # How to get results for only some pairs of groups
+#' compare_groups(x, data = "tax_table",
+#'                cols = hmp_samples$sample_id,
+#'                groups = hmp_samples$body_site,
+#'                combinations = list(c('Nose', 'Saliva'),
+#'                                    c('Skin', 'Throat')))
 #' 
 #' }
 #' 
@@ -712,7 +719,7 @@ compare_groups <- function(obj, data, cols, groups,
 #' @examples \dontrun{
 #' # Parse data for example
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
-#'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+#'                    class_key = c(tax_rank = "taxon_rank", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
 #'                    
 #' # Calculate the taxon abundance for each numeric column (i.e. sample)
@@ -774,7 +781,7 @@ calc_taxon_abund <- function(obj, data, cols = NULL, groups = NULL,
         }
       }, numeric(1))
     })
-    output <- tibble::as.tibble(output, stringsAsFactors = FALSE)
+    output <- tibble::as_tibble(output, stringsAsFactors = FALSE)
     
     return(output)
   }
@@ -811,7 +818,7 @@ calc_taxon_abund <- function(obj, data, cols = NULL, groups = NULL,
 #' \dontrun{
 #' # Parse data for example
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
-#'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+#'                    class_key = c(tax_rank = "taxon_rank", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
 #'                    
 #' # Count samples with at least one read
@@ -867,7 +874,7 @@ calc_n_samples <- function(obj, data, cols = NULL, groups = "n_samples",
     output <- lapply(split(cols, groups), function(col_index) {
       vapply(seq_len(nrow(count_table)), function(i) sum(count_table[i, col_index] > more_than), integer(1))
     })
-    as.data.frame(output, stringsAsFactors = FALSE)
+    dplyr::as_tibble(output)
   }
   
   output <- do_calc_on_num_cols(obj, data, cols = cols, groups = groups, 
@@ -902,7 +909,7 @@ calc_n_samples <- function(obj, data, cols = NULL, groups = "n_samples",
 #' \dontrun{
 #' # Parse data for example
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
-#'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+#'                    class_key = c(tax_rank = "taxon_rank", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
 #'                    
 #' # Count samples with at least one read
@@ -931,7 +938,7 @@ calc_n_samples <- function(obj, data, cols = NULL, groups = "n_samples",
 #' }
 #' 
 #' @export
-calc_prop_samples <- function(obj, data, cols = NULL, groups = "n_samples",
+calc_prop_samples <- function(obj, data, cols = NULL, groups = "prop_samples",
                               other_cols = FALSE, out_names = NULL, drop = FALSE,
                               more_than = 0, dataset = NULL) {
   
@@ -958,7 +965,7 @@ calc_prop_samples <- function(obj, data, cols = NULL, groups = "n_samples",
     output <- lapply(split(cols, groups), function(col_index) {
       vapply(seq_len(nrow(count_table)), function(i) sum(count_table[i, col_index] > more_than), integer(1)) / length(col_index)
     })
-    as.data.frame(output, stringsAsFactors = FALSE)
+    dplyr::as_tibble(output, stringsAsFactors = FALSE)
   }
   
   output <- do_calc_on_num_cols(obj, data, cols = cols, groups = groups, 
@@ -996,7 +1003,7 @@ calc_prop_samples <- function(obj, data, cols = NULL, groups = "n_samples",
 #' \dontrun{
 #' # Parse data for examples
 #' x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
-#'                    class_key = c(tax_rank = "info", tax_name = "taxon_name"),
+#'                    class_key = c(tax_rank = "taxon_rank", tax_name = "taxon_name"),
 #'                    class_regex = "^(.+)__(.+)$")
 #'
 #' # Convert count to presence/absence
