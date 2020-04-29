@@ -1,7 +1,7 @@
 Package: metacoder
 Title: Tools for Parsing, Manipulating, and Graphing Taxonomic
         Abundance Data
-Version: 0.3.3
+Version: 0.3.4
 Authors@R: c(person("Zachary", "Foster", email =
         "zacharyfoster1989@gmail.com", role = c("aut", "cre")),
         person("Niklaus", "Grunwald", email =
@@ -23,15 +23,15 @@ Imports: stringr, ggplot2, igraph, scales, grid, taxize, seqinr,
         cowplot, GA, Rcpp, crayon, svglite, viridisLite, tibble
 Suggests: knitr, rmarkdown, testthat, zlibbioc, BiocManager, phyloseq
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
-Date: 2019-07-17
+RoxygenNote: 7.1.0
+Date: 2020-04-28
 Encoding: UTF-8
 biocViews:
 LinkingTo: Rcpp
 NeedsCompilation: yes
-Packaged: 2019-07-17 23:56:43 UTC; zachary
+Packaged: 2020-04-29 19:16:09 UTC; fosterz
 Author: Zachary Foster [aut, cre],
   Niklaus Grunwald [ths],
   Rob Gilmore [ctb]
 Repository: CRAN
-Date/Publication: 2019-07-18 06:35:33 UTC
+Date/Publication: 2020-04-29 19:40:03 UTC

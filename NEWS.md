@@ -1,5 +1,10 @@
 # News 
 
+##  metacoder 0.3.4
+
+* Added parsing of taxon ranks to the UNITE parser
+* Versious minor bug fixes
+
 ## metacoder 0.3.3
 
 * Fixed a bug in `calc_n_samples` and `calc_prop_samples` that caused an error when group names had spaces in them.
