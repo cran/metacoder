@@ -1,7 +1,7 @@
 Package: metacoder
 Title: Tools for Parsing, Manipulating, and Graphing Taxonomic
         Abundance Data
-Version: 0.3.4
+Version: 0.3.5
 Authors@R: c(person("Zachary", "Foster", email =
         "zacharyfoster1989@gmail.com", role = c("aut", "cre")),
         person("Niklaus", "Grunwald", email =
@@ -11,27 +11,26 @@ Authors@R: c(person("Zachary", "Foster", email =
 Maintainer: Zachary Foster <zacharyfoster1989@gmail.com>
 Description: A set of tools for parsing, manipulating, and graphing data
     classified by a hierarchy (e.g. a taxonomy).
-Depends: R (>= 3.0.2), taxa
+Depends: R (>= 3.0.2)
 License: GPL-2 | GPL-3
 LazyData: true
 URL: https://grunwaldlab.github.io/metacoder_documentation/
 BugReports: https://github.com/grunwaldlab/metacoder/issues
-Imports: stringr, ggplot2, igraph, scales, grid, taxize, seqinr,
-        reshape2, zoo, traits, RColorBrewer, RCurl, ape, reshape,
+Imports: stringr, ggplot2, igraph, grid, taxize, seqinr, RCurl, ape,
         stats, grDevices, utils, lazyeval, dplyr, magrittr, readr,
-        rlang, biomformat, phylotate, ggfittext, vegan, ggrepel,
-        cowplot, GA, Rcpp, crayon, svglite, viridisLite, tibble
-Suggests: knitr, rmarkdown, testthat, zlibbioc, BiocManager, phyloseq
+        rlang, ggfittext, vegan, cowplot, GA, Rcpp, crayon, tibble, R6
+Suggests: knitr, rmarkdown, testthat, zlibbioc, BiocManager, phyloseq,
+        phylotate, traits, biomformat
 VignetteBuilder: knitr
-RoxygenNote: 7.1.0
-Date: 2020-04-28
+RoxygenNote: 7.1.1
+Date: 2021-06-23
 Encoding: UTF-8
 biocViews:
 LinkingTo: Rcpp
 NeedsCompilation: yes
-Packaged: 2020-04-29 19:16:09 UTC; fosterz
+Packaged: 2021-06-23 21:44:33 UTC; fosterz
 Author: Zachary Foster [aut, cre],
   Niklaus Grunwald [ths],
   Rob Gilmore [ctb]
 Repository: CRAN
-Date/Publication: 2020-04-29 19:40:03 UTC
+Date/Publication: 2021-06-23 22:00:02 UTC
