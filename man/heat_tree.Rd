@@ -86,7 +86,7 @@ heat_tree(...)
 }
 \arguments{
 \item{...}{(other named arguments)
-Passed to the \code{\link{igraph}} layout function used.}
+Passed to the \code{igraph} layout function used.}
 
 \item{.input}{An object of type \code{\link{taxmap}}}
 
@@ -286,7 +286,7 @@ Default: 3.}
 \item{background_color}{The background color of the plot.
 Default: Transparent}
 
-\item{output_file}{The path to one or more files to save the plot in using \code{\link[ggplot2]{ggsave}}. 
+\item{output_file}{The path to one or more files to save the plot in using \code{ggplot2::ggsave}. 
 The type of the file will be determined by the extension given.
 Default: Do not save plot.}
 
@@ -396,22 +396,22 @@ color names (e.g. \code{"black"}).
 
 
 Layouts determine the position of node elements on the graph.
-They are implemented using the \code{\link{igraph}} package.
-Any additional arguments passed to \code{heat_tree} are passed to the  \code{\link{igraph}}
+They are implemented using the \code{igraph} package.
+Any additional arguments passed to \code{heat_tree} are passed to the  \code{igraph}
 function used.
 The following \code{character} values are understood:
 
 \describe{
-  \item{"automatic"}{Use \code{\link[igraph]{nicely}}. Let \code{\link{igraph}} choose the layout.}
-  \item{"reingold-tilford"}{Use \code{\link[igraph]{as_tree}}. A circular tree-like layout.}
-  \item{"davidson-harel"}{Use \code{\link[igraph]{with_dh}}. A type of simulated annealing.}
-  \item{"gem"}{Use \code{\link[igraph]{with_gem}}. A force-directed layout.}
-  \item{"graphopt"}{Use \code{\link[igraph]{with_graphopt}}. A force-directed layout.}
-  \item{"mds"}{Use \code{\link[igraph]{with_mds}}. Multidimensional scaling.}
-  \item{"fruchterman-reingold"}{Use \code{\link[igraph]{with_fr}}. A force-directed layout.}
-  \item{"kamada-kawai"}{Use \code{\link[igraph]{with_kk}}. A layout based on a physical model of springs.}
-  \item{"large-graph"}{Use \code{\link[igraph]{with_lgl}}. Meant for larger graphs.}
-  \item{"drl"}{Use \code{\link[igraph]{with_drl}}. A force-directed layout.}
+  \item{"automatic"}{Use \code{igraph::nicely}. Let \code{igraph} choose the layout.}
+  \item{"reingold-tilford"}{Use \code{igraph::as_tree}. A circular tree-like layout.}
+  \item{"davidson-harel"}{Use \code{igraph::with_dh}. A type of simulated annealing.}
+  \item{"gem"}{Use \code{igraph::with_gem}. A force-directed layout.}
+  \item{"graphopt"}{Use \code{igraph::with_graphopt}. A force-directed layout.}
+  \item{"mds"}{Use \code{igraph::with_mds}. Multidimensional scaling.}
+  \item{"fruchterman-reingold"}{Use \code{igraph::with_fr}. A force-directed layout.}
+  \item{"kamada-kawai"}{Use \code{igraph::with_kk}. A layout based on a physical model of springs.}
+  \item{"large-graph"}{Use \code{igraph::with_lgl}. Meant for larger graphs.}
+  \item{"drl"}{Use \code{igraph::with_drl}. A force-directed layout.}
 }
 }
 
@@ -443,7 +443,7 @@ implementation of the label overlap avoidance used in metacoder.
 }
 
 \examples{
-\dontrun{
+\donttest{
 # Parse dataset for plotting
 x = parse_tax_data(hmp_otus, class_cols = "lineage", class_sep = ";",
                    class_key = c(tax_rank = "taxon_rank", tax_name = "taxon_name"),
@@ -495,7 +495,7 @@ heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = n_obs,
           
 # Label overlap avoidance
 #  You can modfiy how label scattering is handled using the `replel_force` and
-`repel_iter` options. You can turn off label scattering using the `repel_labels` option.
+# `repel_iter` options. You can turn off label scattering using the `repel_labels` option.
 heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = n_obs,
           repel_force = 2, repel_iter = 20000)
 heat_tree(x, node_label = taxon_names, node_size = n_obs, node_color = n_obs,
